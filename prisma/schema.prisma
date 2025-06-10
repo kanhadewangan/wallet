@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id       Int     @id @default(autoincrement())
+  username String?
+  email    String  @unique
+  password String
+  post     post[]
+  key keys[]
+  payment payment[]
+  @@map("users") // Maps the model to the "users" table in the database
+  @@index([email], name: "idx_users_email") // Creates an index on the email field for faster lookups
+  @@index([username], name: "idx_users_username") // Creates an index on the username field for faster lookups
+  @@unique([email, username]) // Ensures that the combination of email and username is unique
+}
+
+model post {
+  id        Int    @id @default(autoincrement())
+  title     String
+  author    String
+  author_id Int
+  User      user   @relation(fields: [author_id], references: [id])
+}
+
+model payment {
+  id Int @id @default(autoincrement())
+  amount Int
+  fromKey String
+  toKey String
+  timestamp DateTime @default(now())
+  userId Int
+  signature String @unique
+  @@index([timestamp], name: "idx_payments_timestamp") // Creates an index on the timestamp field for faster lookups
+  @@map("payments") // Maps the model to the "payments" table in the database
+  User user @relation(fields: [userId], references: [id])
+}
+
+model keys {
+  id Int @id @default(autoincrement())
+  privateKeys String
+  publicKeys  String
+  userId Int 
+  User user @relation(fields: [userId] ,references: [id])
+}
+
