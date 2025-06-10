@@ -12,7 +12,6 @@ payment.get("/", async (req, res) => {
 })
 payment.get("/generate", async (req, res) => {
     const keypair = Keypair.generate();
-    //const pubkey =  PublicKey(keypair.publicKey.to)
     const data = await prisma.keys.create({
         data: {
             privateKeys: keypair.secretKey.toString(),
