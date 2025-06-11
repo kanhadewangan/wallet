@@ -1,62 +1,61 @@
 # 💸 Solana Payment System
 
-> Your go-to backend for managing Solana transactions, no cap fr fr 🚀
+A backend application for managing Solana cryptocurrency transactions with a PostgreSQL database using Prisma ORM.
 
-## ✨ What's the vibe?
+## Features
 
-This backend app is your ultimate wingman for handling Solana crypto transactions. It's like having a personal finance manager but for your digital assets. We're talking about:
+- Generate Solana keypairs and store them in a database
+- Request airdrops from a local Solana validator
+- Check wallet balances
+- Transfer SOL between wallets
+- Record transaction history in a database
 
-- 🔑 Creating and storing Solana keypairs (keeping your crypto safe and sound)
-- 🎁 Getting those sweet airdrops (free crypto, anyone?)
-- 💰 Checking your wallet balance (gotta know what you're working with)
-- 🔄 Transferring SOL between wallets (sharing is caring)
-- 📝 Keeping track of all your transactions (no more "where did my SOL go?" moments)
+## Tech Stack
 
-## 🛠️ Tech Stack (the cool stuff we're using)
+- **Language**: TypeScript
+- **Runtime**: Bun
+- **Blockchain**: Solana Web3.js
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **Environment**: dotenv for configuration
 
-- **Language**: TypeScript (because we're fancy like that)
-- **Runtime**: Bun (it's fast af)
-- **Blockchain**: Solana Web3.js (the future is now)
-- **Database**: PostgreSQL (storing your data like a boss)
-- **ORM**: Prisma (making database stuff less painful)
-- **Environment**: dotenv (keeping secrets, secret)
+## Prerequisites
 
-## 🎯 Before You Start
+- Bun installed
+- PostgreSQL database
+- Local Solana validator (or connection to testnet/devnet)
 
-Make sure you've got:
-- Bun installed (if not, what are you waiting for?)
-- PostgreSQL database (your data's new home)
-- Local Solana validator (or just connect to testnet/devnet)
+## Setup
 
-## 🚀 Let's Get This Party Started
-
-### 1. Install the good stuff
+### 1. Install dependencies
 
 ```bash
 bun install
 ```
 
-### 2. Set up your environment
+### 2. Configure environment variables
 
-Create a `.env` file in your project root:
+Create a `.env` file in the project root:
 
 ```
-DATABASE_URL="postgresql://username:password@localhost:5432/database_name" 
+DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
 ```
 
-### 3. Database setup (let's get organized)
+### 3. Setup the database
+
+Run Prisma migrations to create necessary tables:
 
 ```bash
 bunx prisma migrate dev
 ```
 
-### 4. Start your local Solana validator (if you're going local)
+### 4. Start a local Solana validator (if using local development)
 
 ```bash
 solana-test-validator
 ```
 
-## 🎮 How to Use This Bad Boy
+## Usage
 
 ### Generate a new Solana keypair
 
@@ -65,62 +64,70 @@ bun run prisma/keypair.ts
 ```
 
 This will:
-- Create a fresh Solana keypair
-- Store it safely in your database
+- Generate a new Solana keypair
+- Store the public and private keys in the database
 
-### Get that airdrop (free money alert! 🚨)
+### Request an airdrop
+
+To get test SOL on your account (for local development):
 
 ```bash
 bun run prisma/keypair.ts
 ```
 
-Just uncomment `await drops();` and you're good to go!
+Uncomment the line `await drops();` first.
 
-### Send some SOL
+### Transfer SOL
+
+Transfer SOL from one account to another:
 
 ```bash
 bun run prisma/payments.ts
 ```
 
 This will:
-1. Grab your keypair from the database
-2. Create a transaction to send SOL to your homie
-3. Keep track of everything in the payment history
+1. Fetch the keypair from the database
+2. Create a transaction to send SOL to the recipient
+3. Record the transaction in the payment history
 
-### Check your transaction history
+### View payment history
 
 ```bash
 bun run prisma/payments.ts
 ```
 
-## 📊 Database Schema (the boring but important stuff)
+## Database Schema
+
+The application uses the following database tables:
 
 ### Keys Table
-- `id`: Your unique identifier
-- `publicKeys`: Public key (base58 format)
-- `privateKeys`: Private key (keep this safe!)
-- `userId`: Who you are
+- `id`: Unique identifier
+- `publicKeys`: Public key in base58 format
+- `privateKeys`: Private key stored as a string
+- `userId`: User identifier
 
 ### Payment Table
-- `id`: Transaction ID
-- `fromKey`: Who sent it
-- `toKey`: Who got it
-- `amount`: How much SOL
+- `id`: Unique identifier
+- `fromKey`: Sender's public key
+- `toKey`: Recipient's public key
+- `amount`: Amount of SOL transferred
 - `signature`: Transaction signature
-- `userId`: Who made it happen
-- `timestamp`: When it went down
+- `userId`: User identifier
+- `timestamp`: Time of transaction
 
-## 👨‍💻 Development Mode 
+## Development
 
-### Making Database Changes
+### Migrations
 
-After updating `schema.prisma`:
+After making changes to the `schema.prisma` file, run:
 
 ```bash
 bunx prisma migrate dev --name <migration-name>
 ```
 
-### Need some test data?
+### Seed Database
+
+If you need to seed the database with initial data:
 
 ```bash
 bunx prisma db seed
