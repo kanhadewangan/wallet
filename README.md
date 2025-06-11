@@ -131,3 +131,96 @@ bunx prisma db seed
 Made with ❤️ using `bun init` in bun v1.2.8. [Bun](https://bun.sh) is literally the fastest JavaScript runtime out there, no cap.
 
 > P.S. If you're reading this, you're probably a developer. Keep being awesome! 💪
+
+# Backend API Documentation
+
+This document provides information about all available API endpoints in the backend.
+
+## User Endpoints (`/user`)
+
+### Sign Up
+- **POST** `/user/signup`
+- **Body**: 
+  ```json
+  {
+    "username": "string",
+    "email": "string",
+    "password": "string"
+  }
+  ```
+- **Response**: User data with username and password
+
+### Login
+- **POST** `/user/login`
+- **Body**:
+  ```json
+  {
+    "username": "string",
+    "password": "string"
+  }
+  ```
+- **Response**: User data if credentials are valid
+
+## Post Endpoints (`/post`)
+
+### Get All Posts
+- **GET** `/post/all`
+- **Response**: Array of all posts
+
+### Add New Post
+- **POST** `/post/add`
+- **Body**:
+  ```json
+  {
+    "title": "string",
+    "author": "string"
+  }
+  ```
+- **Response**: Created post data
+
+### Get Post by ID
+- **GET** `/post/add/:id`
+- **Params**: `id` (post ID)
+- **Response**: Post data for the specified ID
+
+## Payment Endpoints (`/payment`)
+
+### Get All Payments
+- **GET** `/payment`
+- **Response**: Array of all payment records
+
+### Generate New Keypair
+- **GET** `/payment/generate`
+- **Response**: Generated public key data
+
+### Check Balance
+- **POST** `/payment/balance`
+- **Body**:
+  ```json
+  {
+    "publicKey": "string"
+  }
+  ```
+- **Response**: Balance information in SOL and lamports
+
+### Peer-to-Peer Transfer
+- **POST** `/payment/p2p`
+- **Body**:
+  ```json
+  {
+    "fromKey": "string",
+    "toKey": "string",
+    "amount": "number"
+  }
+  ```
+- **Response**: Transaction signature and status
+
+## Transaction Endpoints (`/transaction`)
+
+### Request Airdrop
+- **GET** `/transaction/airdrop`
+- **Response**: Transaction value after airdrop confirmation
+- **Note**: Airdrops 1 SOL to the first key in the database
+
+## Error Handling
+All endpoints include error handling and will return appropriate error messages if something goes wrong during the request processing.
