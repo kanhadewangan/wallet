@@ -1,8 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express"
 
-
-
+import jwt, { type JwtPayload } from "jsonwebtoken";
+import { JWT_SECRTE } from "./secrete";
+import crypto from "crypto";
 const route = express.Router();
 const prisma = new PrismaClient()
 
@@ -12,33 +13,42 @@ route.post("/signup", async (req, res) => {
         const { username, email, password } = req.body;
         const users = await prisma.user.create({
             data: {
+
                 username: username,
                 password: password,
-                email: email
+                email: email,
             },
             select: {
-                username: true,
-                password: true
+                id: true
             }
         })
-        res.json({
-            "message": "login ",
-            "data": users
+        const token = jwt.sign({
+            id: users.id,
+        }, JWT_SECRTE)
+        console.log(token);
+        res.json({ "auth": token }).setHeader("auth", token);
 
-        }).status(200)
+
     }
     catch (e) {
-        res.send("error").status(404)
+        res.send("error")
+        console.log(e);
     }
 })
 
 route.post("/login", async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const auth = req.headers["auth"];
+        if (typeof auth !== 'string') {
+            return res.status(401).send('Invalid auth token');
+        }
+        const decode = jwt.decode(auth, JWT_SECRTE);
+        if (!decode) {
+            return res.status(401).send("invaild Token")
+        }
         const users = await prisma.user.findFirst({
             where: {
-                username: username,
-                password: password
+                id: decode.id
             }
         })
         res.send({
