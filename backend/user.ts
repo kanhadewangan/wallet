@@ -4,6 +4,7 @@ import express from "express"
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { JWT_SECRTE } from "./secrete";
 import crypto from "crypto";
+import cookie from "cookie-parser";
 const route = express.Router();
 const prisma = new PrismaClient()
 
@@ -22,13 +23,11 @@ route.post("/signup", async (req, res) => {
                 id: true
             }
         })
-        const token = jwt.sign({
+        const auth = jwt.sign({
             id: users.id,
         }, JWT_SECRTE)
-        console.log(token);
-        res.json({ "auth": token }).setHeader("auth", token);
-
-
+        console.log(auth);
+        res.cookie("auth",auth);
     }
     catch (e) {
         res.send("error")
@@ -38,11 +37,9 @@ route.post("/signup", async (req, res) => {
 
 route.post("/login", async (req, res) => {
     try {
-        const auth = req.headers["auth"];
-        if (typeof auth !== 'string') {
-            return res.status(401).send('Invalid auth token');
-        }
-        const decode = jwt.decode(auth, JWT_SECRTE);
+
+        
+        const decode = req.cookies("auth");
         if (!decode) {
             return res.status(401).send("invaild Token")
         }
