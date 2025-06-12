@@ -1,6 +1,6 @@
 # 🦄 GenNZ Wallet
 
-![wallet-banner](https://user-images.githubusercontent.com/12345678/your-banner-image.png)
+![wallet-banner](https://www.lummi.ai/illustration/stylized-piggy-bank-illustration-9zjru)
 
 Welcome to **GenNZ Wallet** — your next-generation, ultra-stylish digital wallet.  
 Empowering Gen Z to take control of their finances, flex their style, and manage their money with a vibe that matches YOU. 🚀✨
