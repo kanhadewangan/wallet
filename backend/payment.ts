@@ -2,22 +2,31 @@ import { PrismaClient } from "@prisma/client";
 import { clusterApiUrl, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import express, { Router } from "express"
 import type { Request, Response } from "express"
+import { auth, type AuthRequest } from "./middle";
+import jwt, { type JwtPayload } from "jsonwebtoken";
+import { json } from "stream/consumers";
+import { JWT_SECRTE } from "./secrete";
 
 const payment: Router = express.Router();
 const prisma = new PrismaClient()
-import jwt from "jsonwebtoken";
 
 payment.get("/", async (req, res) => {
+    
     const data = await prisma.payment.findMany({})
     res.send(data);
 })
-payment.get("/generate", async (req, res) => {
+payment.get("/generate", async (req: AuthRequest, res: Response) => {
+
+    const auth = req.headers["auth"];
+    const token = jwt.verify(auth,JWT_SECRTE);
+    console.log(token);
     const keypair = Keypair.generate();
+    
     const data = await prisma.keys.create({
         data: {
             privateKeys: keypair.secretKey.toString(),
             publicKeys: keypair.publicKey.toBase58().toString(),
-            userId: 1
+            userId:  token.id
         },
         select: {
             publicKeys: true
@@ -32,6 +41,13 @@ interface BalanceRequest {
 
 payment.post("/balance", async (req, res) => {
     try {
+        const headers = req.headers["auth"]
+        if(!headers){
+            res.json({
+                "message":"Not Authenticated",
+                "status":401
+            })
+        }
         const { publicKey } = req.body;
 
         // Enhanced validation

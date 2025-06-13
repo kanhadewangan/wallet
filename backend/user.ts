@@ -1,20 +1,21 @@
 import { PrismaClient } from "@prisma/client";
-import express from "express"
-
+import express, { Router } from "express"
+import type { Request, Response } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { JWT_SECRTE } from "./secrete";
-import crypto from "crypto";
-import cookie from "cookie-parser";
-const route = express.Router();
+import { auth, type AuthRequest } from "./middle";
+import cookieParser from "cookie-parser";
+
+const route: Router = express.Router();
 const prisma = new PrismaClient()
 
+route.use(cookieParser());
 
 route.post("/signup", async (req, res) => {
     try {
         const { username, email, password } = req.body;
         const users = await prisma.user.create({
             data: {
-
                 username: username,
                 password: password,
                 email: email,
@@ -25,27 +26,36 @@ route.post("/signup", async (req, res) => {
         })
         const auth = jwt.sign({
             id: users.id,
-        }, JWT_SECRTE)
+        }, JWT_SECRTE, { expiresIn: "1hr" })
         console.log(auth);
-        res.cookie("auth",auth);
+        res.cookie("auth", auth, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            path:"*"
+        }).json({
+            "message": "created successfully"
+        });
     }
     catch (e) {
-        res.send("error")
+        res.send("error").status(404);
         console.log(e);
     }
 })
 
-route.post("/login", async (req, res) => {
+route.get("/login", async (req, res) => {
     try {
-
-        
-        const decode = req.cookies("auth");
-        if (!decode) {
+        const token = req.cookies.auth;
+        if (!token) {
             return res.status(401).send("invaild Token")
         }
+        const decode = jwt.verify(token, JWT_SECRTE) as JwtPayload;
         const users = await prisma.user.findFirst({
             where: {
                 id: decode.id
+            },
+            select:{
+                username:true
             }
         })
         res.send({
@@ -58,6 +68,22 @@ route.post("/login", async (req, res) => {
     }
 })
 
-
+route.get("/profile", auth, async (req: AuthRequest, res: Response) => {
+    try {
+        if (!req.userId) {
+            return res.status(401).json({ error: "User not authenticated" });
+        }
+        const user = await prisma.user.findUnique({
+            where: { id: req.userId },
+            select: {
+                username: true,
+                email: true
+            }
+        });
+        res.json({ user });
+    } catch (error) {
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
 
 export default route;
