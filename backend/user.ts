@@ -4,8 +4,9 @@ import type { Request, Response } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { JWT_SECRTE } from "./secrete";
 import crypto from "crypto";
-import cookie from "cookie-parser";
+import cookieParser from "cookie-parser";
 const route = express.Router();
+import { auth, type AuthRequest } from "./middle";
 const prisma = new PrismaClient()
 
 route.use(cookieParser());
@@ -37,10 +38,8 @@ route.post("/signup", async (req, res) => {
 
 route.get("/login", async (req, res) => {
     try {
-
-        
-        const decode = req.cookies("auth");
-        if (!decode) {
+        let token = req.cookies("auth");
+        if (!token) {
             return res.status(401).send("invaild Token")
         }
         const decode = jwt.verify(token, JWT_SECRTE) as JwtPayload;
@@ -68,7 +67,7 @@ route.get("/profile", auth, async (req: AuthRequest, res: Response) => {
             return res.status(401).json({ error: "User not authenticated" });
         }
         const user = await prisma.user.findUnique({
-            where: { id: req.userId },
+            where: { id: req.userId  },
             select: {
                 username: true,
                 email: true

@@ -84,7 +84,7 @@ payment.post("/balance", async (req, res) => {
         });
     } catch (error) {
         console.error("Error getting balance:", error);
-        res.status(500).json({ error: "Failed to get balance: " + error.message });
+        res.status(500).json({ error: "Failed to get balance: " + error });
     }
 })
 
