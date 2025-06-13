@@ -10,23 +10,52 @@ import { JWT_SECRTE } from "./secrete";
 const payment: Router = express.Router();
 const prisma = new PrismaClient()
 
-payment.get("/", async (req, res) => {
-    
-    const data = await prisma.payment.findMany({})
+// Authentication middleware for all routes except root
+payment.use(async (req: AuthRequest, res: Response, next) => {
+    // Skip auth for root path
+    if (req.path === "/") {
+        return next();
+    }
+
+    try {
+        const token = req.headers["auth"];
+        if (!token || typeof token !== 'string') {
+            return res.status(401).json({ message: "Authentication required" });
+        }
+
+        const decoded = jwt.verify(token, JWT_SECRTE) as { id: string };
+        req.userId = decoded.id;
+        next();
+    } catch (error) {
+        return res.status(401).json({ message: "Invalid token" });
+    }
+});
+
+payment.get("/", async (req: AuthRequest, res: Response) => {
+    const token = req.headers["auth"] as JwtPayload
+    const decode = jwt.verify(token, JWT_SECRTE)
+    const data = await prisma.payment.findMany({
+        where: {
+            userId: {
+                equals: decode.id
+            }
+        }
+    })
     res.send(data);
 })
+
 payment.get("/generate", async (req: AuthRequest, res: Response) => {
 
     const auth = req.headers["auth"];
-    const token = jwt.verify(auth,JWT_SECRTE);
+    const token = jwt.verify(auth, JWT_SECRTE);
     console.log(token);
     const keypair = Keypair.generate();
-    
+
     const data = await prisma.keys.create({
         data: {
             privateKeys: keypair.secretKey.toString(),
             publicKeys: keypair.publicKey.toBase58().toString(),
-            userId:  token.id
+            userId: Number(req.userId)
         },
         select: {
             publicKeys: true
@@ -42,10 +71,10 @@ interface BalanceRequest {
 payment.post("/balance", async (req, res) => {
     try {
         const headers = req.headers["auth"]
-        if(!headers){
+        if (!headers) {
             res.json({
-                "message":"Not Authenticated",
-                "status":401
+                "message": "Not Authenticated",
+                "status": 401
             })
         }
         const { publicKey } = req.body;
@@ -149,7 +178,7 @@ payment.post("/p2p", async (req, res) => {
     }
     catch (e) {
         console.error("Transaction error:", e);
-        res.status(500).json({ error: `Error: ${e.message}` });
+        res.status(500).json({ error: `Error: ${e}` });
     }
 })
 
