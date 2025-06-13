@@ -10,7 +10,7 @@ import { auth, type AuthRequest } from "./middle";
 const prisma = new PrismaClient()
 
 route.use(cookieParser());
-
+ 
 route.post("/signup", async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -28,7 +28,8 @@ route.post("/signup", async (req, res) => {
             id: users.id,
         }, JWT_SECRTE)
         console.log(auth);
-        res.cookie("auth",auth);
+        res.cookie("auth",auth).send("created");
+        
     }
     catch (e) {
         res.send("error").status(404);
@@ -38,7 +39,7 @@ route.post("/signup", async (req, res) => {
 
 route.get("/login", async (req, res) => {
     try {
-        let token = req.cookies("auth");
+        const token = req.headers["auth"];
         if (!token) {
             return res.status(401).send("invaild Token")
         }
@@ -48,7 +49,8 @@ route.get("/login", async (req, res) => {
                 id: decode.id
             },
             select:{
-                username:true
+                username:true,
+                id:true
             }
         })
         res.send({

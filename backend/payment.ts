@@ -10,9 +10,7 @@ import { JWT_SECRTE } from "./secrete";
 const payment: Router = express.Router();
 const prisma = new PrismaClient()
 
-// Authentication middleware for all routes except root
 payment.use(async (req: AuthRequest, res: Response, next) => {
-    // Skip auth for root path
     if (req.path === "/") {
         return next();
     }
