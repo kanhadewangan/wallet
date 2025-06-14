@@ -22,7 +22,7 @@ const MotionPaper = motion(Paper);
 const SignUp = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -49,13 +49,14 @@ const SignUp = () => {
       setLoading(true);
       setError(null);
       const response = await axios.post('http://localhost:3000/user/signup', {
-        name: formData.name,
+        username: formData.username,
         email: formData.email,
         password: formData.password
       });
 
       if (response.data) {
-        navigate('/login');
+        localStorage.setItem("token",response.data);
+        navigate('/dashboard');
       }
     } catch (err) {
       setError('Failed to create account. Please try again.');
