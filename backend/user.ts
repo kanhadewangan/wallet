@@ -21,11 +21,13 @@ route.post("/signup", async (req, res) => {
                 email: email,
             },
             select: {
-                id: true
+                id: true,
+                username:true,
+                email:true
             }
         })
         const auth = jwt.sign({
-            id: users.id,
+            users,
         }, JWT_SECRTE)
         console.log(auth);
        res.send(auth)

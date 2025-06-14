@@ -43,6 +43,11 @@ interface UserProfile {
   joinDate: string;
 }
 
+interface CustomJwtPayload {
+  username: string;
+  email: string;
+}
+
 const Profile = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -58,11 +63,12 @@ const Profile = () => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        const decoded = jwtDecode(token);
+        const decoded = jwtDecode<CustomJwtPayload>(token);
         setIsAuthenticated(true);
+        console.log(decoded)
         setProfile({
-          name: decoded.id as string || 'User',
-          email: decoded.email as string || 'user@example.com',
+          name: decoded.users.username as string || 'User',
+          email: decoded.users.email as string || 'user@example.com',
           walletAddress: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
           balance: '10.5 SOL',
           joinDate: '2024-01-01',

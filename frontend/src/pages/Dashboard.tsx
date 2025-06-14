@@ -165,11 +165,11 @@ const Dashboard = () => {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <Box sx={{ flexGrow: 1, bgcolor: 'background.default', minHeight: '100vh' }}>
+      <Box  sx={{ flexGrow: 1, bgcolor: 'background.default', minHeight: '100vh' }}>
         <AppBar position="static" color="transparent" elevation={0}>
           <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Solana Wallet
+            <Typography className='text-white ' variant="h4" component="div" sx={{ flexGrow: 1 }}>
+             🦄 GenNZ Wallet
             </Typography>
             <IconButton color="inherit">
               <Badge badgeContent={4} color="error">
