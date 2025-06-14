@@ -5,9 +5,9 @@ async function init() {
     try {
         const user = await prisma.user.create({
             data: {
-                username: "",
-                password: "",
-                email: "",
+                username: "kanha",
+                password: "123456",
+                email: "kanhadewangan681@gmail.com",
             }
 
         })
@@ -17,7 +17,7 @@ async function init() {
         console.log("Server error");
     }
 }
-// init()
+init()
 
 async function Post() {
     const post = await prisma.post.createMany({
@@ -28,7 +28,7 @@ async function Post() {
     })
     console.log(post);
 }
-Post()
+// Post()
 async function get() {
     try{
     const get = await prisma.post.findFirst({
