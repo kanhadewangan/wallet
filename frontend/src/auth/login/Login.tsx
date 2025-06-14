@@ -1,0 +1,262 @@
+import React, { useState } from 'react';
+import {
+  Container,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Paper,
+  CircularProgress,
+  Alert,
+  Link,
+  InputAdornment,
+  IconButton,
+  Divider,
+} from '@mui/material';
+import { motion } from 'framer-motion';
+import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
+const MotionPaper = motion(Paper);
+
+const Login = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.post('http://localhost:3000/user/login', formData);
+      localStorage.setItem('token', response.data.token);
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        background: 'linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%)',
+        py: 4,
+        position: 'relative',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          width: '200%',
+          height: '200%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%)',
+          animation: 'pulse 8s infinite',
+          '@keyframes pulse': {
+            '0%': { transform: 'scale(1)' },
+            '50%': { transform: 'scale(1.2)' },
+            '100%': { transform: 'scale(1)' }
+          }
+        }
+      }}
+    >
+      <Container maxWidth="sm">
+        <MotionPaper
+          elevation={6}
+          sx={{
+            p: 4,
+            borderRadius: 4,
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+          }}
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Typography 
+            variant="h3" 
+            component="h1" 
+            gutterBottom 
+            align="center"
+            sx={{
+              fontWeight: 800,
+              background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              color: 'transparent',
+              mb: 4,
+              fontFamily: '"Poppins", sans-serif'
+            }}
+          >
+            Welcome Back!
+          </Typography>
+
+          <form onSubmit={handleSubmit}>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <TextField
+                fullWidth
+                label="Email"
+                name="email"
+                type="email"
+                variant="outlined"
+                value={formData.email}
+                onChange={handleChange}
+                sx={{ mb: 2 }}
+                required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email sx={{ color: '#FF6B6B' }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <TextField
+                fullWidth
+                label="Password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                variant="outlined"
+                value={formData.password}
+                onChange={handleChange}
+                sx={{ mb: 3 }}
+                required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock sx={{ color: '#FF6B6B' }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Button
+                fullWidth
+                variant="contained"
+                type="submit"
+                disabled={loading}
+                onClick={()=>{
+                  navigate("/dashboard")
+                }}
+                sx={{
+                  mb: 3,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  textTransform: 'none',
+                  borderRadius: 3,
+                  background: 'linear-gradient(45deg, #FF6B6B 30%, #4ECDC4 90%)',
+                  boxShadow: '0 4px 15px rgba(255, 107, 107, 0.3)',
+                  '&:hover': {
+                    background: 'linear-gradient(45deg, #FF5252 30%, #3DBEB6 90%)',
+                    boxShadow: '0 6px 20px rgba(255, 107, 107, 0.4)'
+                  }
+                }}
+              >
+                {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
+              </Button>
+            </motion.div>
+          </form>
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Alert 
+                severity="error" 
+                sx={{ 
+                  mb: 3,
+                  borderRadius: 2,
+                  background: 'rgba(255, 107, 107, 0.1)',
+                  color: '#FF6B6B',
+                  border: '1px solid rgba(255, 107, 107, 0.2)'
+                }}
+              >
+                {error}
+              </Alert>
+            </motion.div>
+          )}
+
+          <Divider sx={{ my: 3, color: '#666' }}>or</Divider>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+          >
+            <Typography 
+              align="center" 
+              sx={{ 
+                color: '#666',
+                fontSize: '0.95rem'
+              }}
+            >
+              Don't have an account?{' '}
+              <Link 
+                href="/signup" 
+                sx={{ 
+                  color: '#FF6B6B',
+                  textDecoration: 'none',
+                  fontWeight: 600,
+                  '&:hover': { 
+                    textDecoration: 'underline',
+                    color: '#FF5252'
+                  }
+                }}
+              >
+                Sign Up
+              </Link>
+            </Typography>
+          </motion.div>
+        </MotionPaper>
+      </Container>
+    </Box>
+  );
+};
+
+export default Login;

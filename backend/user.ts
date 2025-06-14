@@ -28,7 +28,7 @@ route.post("/signup", async (req, res) => {
             id: users.id,
         }, JWT_SECRTE)
         console.log(auth);
-        res.cookie("auth",auth).send("created");
+       res.send(auth)
         
     }
     catch (e) {
