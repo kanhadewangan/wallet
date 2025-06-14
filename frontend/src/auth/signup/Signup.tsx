@@ -11,20 +11,21 @@ import {
   Link,
   InputAdornment,
   IconButton,
-  Divider,
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const MotionPaper = motion(Paper);
 
-const Login = () => {
+const SignUp = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -39,14 +40,25 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.post('http://localhost:3000/user/login', formData);
-      localStorage.setItem('token', response.data.token);
-      navigate('/dashboard');
+      const response = await axios.post('http://localhost:3000/user/signup', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (response.data) {
+        navigate('/login');
+      }
     } catch (err) {
-      setError('Invalid email or password');
+      setError('Failed to create account. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -58,23 +70,8 @@ const Login = () => {
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
-        background: 'linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%)',
-        py: 4,
-        position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          width: '200%',
-          height: '200%',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%)',
-          animation: 'pulse 8s infinite',
-          '@keyframes pulse': {
-            '0%': { transform: 'scale(1)' },
-            '50%': { transform: 'scale(1.2)' },
-            '100%': { transform: 'scale(1)' }
-          }
-        }
+        background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+        py: 4
       }}
     >
       <Container maxWidth="sm">
@@ -82,32 +79,26 @@ const Login = () => {
           elevation={6}
           sx={{
             p: 4,
-            borderRadius: 4,
+            borderRadius: 2,
             background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            backdropFilter: 'blur(10px)'
           }}
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <Typography 
-            variant="h3" 
-            component="h1" 
-            gutterBottom 
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
             align="center"
             sx={{
-              fontWeight: 800,
-              background: 'linear-gradient(45deg, #FF6B6B, #4ECDC4)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              color: 'transparent',
-              mb: 4,
-              fontFamily: '"Poppins", sans-serif'
+              fontWeight: 600,
+              color: '#1976d2',
+              mb: 4
             }}
           >
-            Welcome Back!
+            Create Account
           </Typography>
 
           <form onSubmit={handleSubmit}>
@@ -115,6 +106,23 @@ const Login = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
+            >
+              <TextField
+                fullWidth
+                label="Name"
+                name="name"
+                variant="outlined"
+                value={formData.name}
+                onChange={handleChange}
+                sx={{ mb: 2 }}
+                required
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
             >
               <TextField
                 fullWidth
@@ -126,20 +134,13 @@ const Login = () => {
                 onChange={handleChange}
                 sx={{ mb: 2 }}
                 required
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Email sx={{ color: '#FF6B6B' }} />
-                    </InputAdornment>
-                  ),
-                }}
               />
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: 0.4 }}
             >
               <TextField
                 fullWidth
@@ -149,14 +150,9 @@ const Login = () => {
                 variant="outlined"
                 value={formData.password}
                 onChange={handleChange}
-                sx={{ mb: 3 }}
+                sx={{ mb: 2 }}
                 required
                 InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Lock sx={{ color: '#FF6B6B' }} />
-                    </InputAdornment>
-                  ),
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
@@ -172,32 +168,44 @@ const Login = () => {
             </motion.div>
 
             <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <TextField
+                fullWidth
+                label="Confirm Password"
+                name="confirmPassword"
+                type={showPassword ? 'text' : 'password'}
+                variant="outlined"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                sx={{ mb: 3 }}
+                required
+              />
+            </motion.div>
+
+            <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <Button
                 fullWidth
                 variant="contained"
+                color="primary"
                 type="submit"
                 disabled={loading}
-                onClick={()=>{
-                  navigate("/dashboard")
-                }}
                 sx={{
-                  mb: 3,
+                  mb: 2,
                   py: 1.5,
                   fontSize: '1.1rem',
                   textTransform: 'none',
-                  borderRadius: 3,
-                  background: 'linear-gradient(45deg, #FF6B6B 30%, #4ECDC4 90%)',
-                  boxShadow: '0 4px 15px rgba(255, 107, 107, 0.3)',
-                  '&:hover': {
-                    background: 'linear-gradient(45deg, #FF5252 30%, #3DBEB6 90%)',
-                    boxShadow: '0 6px 20px rgba(255, 107, 107, 0.4)'
-                  }
+                  borderRadius: 2,
+                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                  boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)'
                 }}
               >
-                {loading ? <CircularProgress size={24} color="inherit" /> : 'Login'}
+                {loading ? <CircularProgress size={24} /> : 'Sign Up'}
               </Button>
             </motion.div>
           </form>
@@ -207,14 +215,11 @@ const Login = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Alert 
-                severity="error" 
-                sx={{ 
-                  mb: 3,
-                  borderRadius: 2,
-                  background: 'rgba(255, 107, 107, 0.1)',
-                  color: '#FF6B6B',
-                  border: '1px solid rgba(255, 107, 107, 0.2)'
+              <Alert
+                severity="error"
+                sx={{
+                  mt: 2,
+                  borderRadius: 2
                 }}
               >
                 {error}
@@ -222,34 +227,32 @@ const Login = () => {
             </motion.div>
           )}
 
-          <Divider sx={{ my: 3, color: '#666' }}>or</Divider>
-
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
-            <Typography 
-              align="center" 
-              sx={{ 
-                color: '#666',
-                fontSize: '0.95rem'
+            <Typography
+              align="center"
+              sx={{
+                mt: 3,
+                color: '#666'
               }}
             >
-              Don't have an account?{' '}
-              <Link 
-                href="/signup" 
-                sx={{ 
-                  color: '#FF6B6B',
+              Already have an account?{' '}
+              <Link
+                href="/login"
+                sx={{
+                  color: '#2196F3',
                   textDecoration: 'none',
                   fontWeight: 600,
-                  '&:hover': { 
+                  '&:hover': {
                     textDecoration: 'underline',
-                    color: '#FF5252'
+                    color: '#1976d2'
                   }
                 }}
               >
-                Sign Up
+                Login
               </Link>
             </Typography>
           </motion.div>
@@ -259,4 +262,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default SignUp;
