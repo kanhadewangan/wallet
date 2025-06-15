@@ -56,7 +56,6 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Rss } from 'lucide-react';
 
 const MotionCard = motion(Card);
 
@@ -120,6 +119,8 @@ const Dashboard = () => {
         auth:token
       }
     });
+
+    const res = await axios.get
     setKeys(response.data);
     setLoading(false);
   };
@@ -271,45 +272,86 @@ const Dashboard = () => {
           anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         />
 
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={8}>
+        <Container maxWidth="xl" sx={{ mt: 4, mb: 4, px: { xs: 2, sm: 3 } }}>
+          <Grid container spacing={3} alignItems="stretch">
+            {/* Market Stats */}
+            <Grid item xs={12}>
               <MotionCard
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
                 sx={{
-                  borderRadius: 4,
                   bgcolor: 'background.paper',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+                  backgroundImage: 'none',
+                  borderRadius: 4,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                  height: '100%'
                 }}
               >
-                <CardContent>
-                  <Typography variant="h4" gutterBottom>
-                    Total Balance
-                  </Typography>
-                  <Typography variant="h3" sx={{ mb: 2 }}>
-                    ${balance}
+                <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                  <Typography variant="h6" gutterBottom sx={{ color: 'text.primary', mb: 3 }}>
+                    Market Stats
                   </Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={6} md={3}>
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        startIcon={<Send />}
-                        sx={{ borderRadius: 2 }}
-                      >
-                        Send
-                      </Button>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Box sx={{ 
+                        p: 2, 
+                        borderRadius: 2,
+                        bgcolor: 'background.default',
+                        textAlign: 'center',
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
+                      }}>
+                        <Typography variant="h4" sx={{ color: 'text.primary', mb: 1 }}>$45,231</Typography>
+                        <Typography variant="body2" color="text.secondary">Total Volume</Typography>
+                      </Box>
                     </Grid>
-                    <Grid item xs={6} md={3}>
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        startIcon={<Receipt />}
-                        sx={{ borderRadius: 2 }}
-                      >
-                        Receive
-                      </Button>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Box sx={{ 
+                        p: 2, 
+                        borderRadius: 2,
+                        bgcolor: 'background.default',
+                        textAlign: 'center',
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
+                      }}>
+                        <Typography variant="h4" sx={{ color: 'text.primary', mb: 1 }}>2,345</Typography>
+                        <Typography variant="body2" color="text.secondary">Active Users</Typography>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Box sx={{ 
+                        p: 2, 
+                        borderRadius: 2,
+                        bgcolor: 'background.default',
+                        textAlign: 'center',
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
+                      }}>
+                        <Typography variant="h4" sx={{ color: 'text.primary', mb: 1 }}>12.5%</Typography>
+                        <Typography variant="body2" color="text.secondary">Growth Rate</Typography>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Box sx={{ 
+                        p: 2, 
+                        borderRadius: 2,
+                        bgcolor: 'background.default',
+                        textAlign: 'center',
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
+                      }}>
+                        <Typography variant="h4" sx={{ color: 'text.primary', mb: 1 }}>98.2%</Typography>
+                        <Typography variant="body2" color="text.secondary">Uptime</Typography>
+                      </Box>
                     </Grid>
                   </Grid>
                 </CardContent>
@@ -344,49 +386,6 @@ const Dashboard = () => {
                   </Box>
                 </CardContent>
               </MotionCard>
-            </Grid>
-
-            {/* Market Stats */}
-            <Grid item xs={12}>
-              <Grid container spacing={2}>
-                {marketStats.map((stat, index) => (
-                  <Grid item xs={12} md={4} key={index}>
-                    <MotionCard
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      sx={{ 
-                        borderRadius: 4,
-                        bgcolor: 'background.paper',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
-                      }}
-                    >
-                      <CardContent>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          {stat.label}
-                        </Typography>
-                        <Typography variant="h6" sx={{ mt: 1 }}>
-                          {stat.value}
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                          {stat.change > 0 ? (
-                            <ArrowUpward color="success" fontSize="small" />
-                          ) : (
-                            <ArrowDownward color="error" fontSize="small" />
-                          )}
-                          <Typography
-                            variant="body2"
-                            color={stat.change > 0 ? 'success.main' : 'error.main'}
-                            sx={{ ml: 0.5 }}
-                          >
-                            {Math.abs(stat.change)}%
-                          </Typography>
-                        </Box>
-                      </CardContent>
-                    </MotionCard>
-                  </Grid>
-                ))}
-              </Grid>
             </Grid>
 
             {/* Token List */}
