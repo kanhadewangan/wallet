@@ -5,6 +5,7 @@ import Signup from './auth/signup/Signup'
 import Dashboard from './pages/Dashboard'
 import HeroPage from './pages/hero/page';
 import Profile from './pages/Profile';
+import GenerateKeys from './pages/GenerateKeys';
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/" element={<HeroPage/>}/>
         <Route path="/profile" element={<Profile/>}/>
+        <Route path="/generate-keys" element={<GenerateKeys/>}/>
       </Routes>
     </Router>
   )

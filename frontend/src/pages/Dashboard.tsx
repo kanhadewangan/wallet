@@ -27,6 +27,12 @@ import {
   ThemeProvider,
   createTheme,
   Badge,
+  Tooltip,
+  Snackbar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import {
@@ -45,8 +51,12 @@ import {
   AccountCircle,
   Settings,
   Logout,
+  ContentCopy,
+  Refresh,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Rss } from 'lucide-react';
 
 const MotionCard = motion(Card);
 
@@ -89,12 +99,15 @@ const Dashboard = () => {
   const [error, setError] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [keys, setKeys] = useState<Array<{ publicKeys: string }>>([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
-  useEffect(() => {
+  useEffect( () => {
     checkAuth();
   }, []);
 
-  const checkAuth = () => {
+  const checkAuth = async () => {
     const token = localStorage.getItem('token');
     if (token) {
       // TODO: Verify token with backend
@@ -102,8 +115,15 @@ const Dashboard = () => {
       // Mock balance data - replace with actual API call
       setBalance('10.5');
     }
+    const response = await axios.get("http://localhost:3000/payments/keys",  {
+      headers:{
+        auth:token
+      }
+    });
+    setKeys(response.data);
     setLoading(false);
   };
+  
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -117,6 +137,24 @@ const Dashboard = () => {
     localStorage.removeItem('token');
     setIsAuthenticated(false);
     navigate('/login');
+  };
+
+  const handleCopyKey = (key: string) => {
+    navigator.clipboard.writeText(key);
+    setSnackbarOpen(true);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
+  };
+
+  const handleProfileClick = () => {
+    setProfileOpen(true);
+    handleClose();
+  };
+
+  const handleProfileClose = () => {
+    setProfileOpen(false);
   };
 
   if (loading) {
@@ -171,6 +209,46 @@ const Dashboard = () => {
             <Typography className='text-white ' variant="h4" component="div" sx={{ flexGrow: 1 }}>
              🦄 GenNZ Wallet
             </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mr: 2 }}>
+              {keys.length > 0 && (
+                <Tooltip title="Your Public Key">
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontFamily: 'monospace',
+                      color: 'text.secondary',
+                      maxWidth: '200px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        color: 'primary.main'
+                      }
+                    }}
+                    onClick={() => handleCopyKey(keys[0].publicKeys)}
+                  >
+                    {keys[0].publicKeys}
+                  </Typography>
+                </Tooltip>
+              )}
+            </Box>
+            <Button
+              variant="outlined"
+              startIcon={<AccountCircle />}
+              onClick={() => navigate('/profile')}
+              sx={{
+                mr: 2,
+                color: 'white',
+                borderColor: 'rgba(255,255,255,0.2)',
+                '&:hover': {
+                  borderColor: 'white',
+                  bgcolor: 'rgba(255,255,255,0.1)'
+                }
+              }}
+            >
+              Profile
+            </Button>
             <IconButton color="inherit">
               <Badge badgeContent={4} color="error">
                 <Notifications />
@@ -185,9 +263,17 @@ const Dashboard = () => {
           </Toolbar>
         </AppBar>
 
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={3000}
+          onClose={handleCloseSnackbar}
+          message="Public key copied to clipboard"
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        />
+
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Grid container spacing={3}>
-            <Grid component="div" item xs={12} md={8}>
+            <Grid item xs={12} md={8}>
               <MotionCard
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -205,7 +291,7 @@ const Dashboard = () => {
                     ${balance}
                   </Typography>
                   <Grid container spacing={2}>
-                    <Grid component="div" item xs={6} md={3}>
+                    <Grid item xs={6} md={3}>
                       <Button
                         fullWidth
                         variant="contained"
@@ -215,7 +301,7 @@ const Dashboard = () => {
                         Send
                       </Button>
                     </Grid>
-                    <Grid component="div" item xs={6} md={3}>
+                    <Grid item xs={6} md={3}>
                       <Button
                         fullWidth
                         variant="outlined"
@@ -230,7 +316,7 @@ const Dashboard = () => {
               </MotionCard>
             </Grid>
 
-            <Grid component="div" item xs={12} md={4}>
+            <Grid item xs={12} md={4}>
               <MotionCard
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -507,7 +593,7 @@ const Dashboard = () => {
               </Grid>
             </Grid>
 
-            {/* Recent Transactions */}
+            {/* Public Keys Section */}
             <Grid item xs={12}>
               <MotionCard
                 initial={{ y: 20, opacity: 0 }}
@@ -519,22 +605,94 @@ const Dashboard = () => {
                   boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
                 }}
               >
-                <div>
-                  <CardContent className=''>
-                    <Typography variant="h6" gutterBottom>
-                      Recent Transactions
+                <CardContent>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      Your Public Keys
                     </Typography>
+                    <Button
+                      variant="outlined"
+                      startIcon={<Refresh />}
+                      onClick={checkAuth}
+                      size="small"
+                    >
+                      Refresh
+                    </Button>
+                  </Box>
+                  {keys.length > 0 ? (
+                    <List sx={{ 
+                      bgcolor: 'background.default',
+                      borderRadius: 2,
+                      p: 1
+                    }}>
+                      {keys.map((key, index) => (
+                        <ListItem
+                          key={index}
+                          sx={{
+                            mb: 1,
+                            borderRadius: 2,
+                            bgcolor: 'background.paper',
+                            '&:hover': {
+                              bgcolor: 'action.hover'
+                            }
+                          }}
+                          secondaryAction={
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              <Tooltip title="Copy Public Key">
+                                <IconButton
+                                  edge="end"
+                                  onClick={() => handleCopyKey(key.publicKeys)}
+                                >
+                                  <ContentCopy />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          }
+                        >
+                          <ListItemText
+                            primary={
+                              <Typography
+                                variant="body1"
+                                sx={{
+                                  fontFamily: 'monospace',
+                                  wordBreak: 'break-all'
+                                }}
+                              >
+                                {key.publicKeys}
+                              </Typography>
+                            }
+                            secondary={
+                              <Typography variant="caption" color="text.secondary">
+                                Key #{index + 1}
+                              </Typography>
+                            }
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  ) : (
                     <Box sx={{ 
                       display: 'flex', 
+                      flexDirection: 'column',
                       alignItems: 'center', 
                       justifyContent: 'center',
                       height: 200,
-                      color: 'text.secondary'
+                      color: 'text.secondary',
+                      gap: 2
                     }}>
-                      No recent transactions
+                      <Typography variant="body1">
+                        No keys found
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        onClick={() => navigate('/generate-keys')}
+                        startIcon={<AccountBalanceWallet />}
+                      >
+                        Generate New Key
+                      </Button>
                     </Box>
-                  </CardContent>
-                </div>
+                  )}
+                </CardContent>
               </MotionCard>
             </Grid>
           </Grid>
@@ -545,7 +703,7 @@ const Dashboard = () => {
           open={Boolean(anchorEl)}
           onClose={handleClose}
         >
-          <MenuItem onClick={() => navigate('/profile')}>
+          <MenuItem onClick={handleProfileClick}>
             <Avatar sx={{ mr: 1 }}>U</Avatar> Profile
           </MenuItem>
           <MenuItem onClick={handleClose}>
@@ -555,6 +713,106 @@ const Dashboard = () => {
             <Avatar sx={{ mr: 1 }}>L</Avatar> Logout
           </MenuItem>
         </Menu>
+
+        <Dialog
+          open={profileOpen}
+          onClose={handleProfileClose}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Avatar sx={{ bgcolor: 'primary.main' }}>U</Avatar>
+              <Typography variant="h6">User Profile</Typography>
+            </Box>
+          </DialogTitle>
+          <DialogContent>
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Your Public Keys
+              </Typography>
+              {keys.length > 0 ? (
+                <List sx={{ 
+                  bgcolor: 'background.default',
+                  borderRadius: 2,
+                  p: 1
+                }}>
+                  {keys.map((key, index) => (
+                    <ListItem
+                      key={index}
+                      sx={{
+                        mb: 1,
+                        borderRadius: 2,
+                        bgcolor: 'background.paper',
+                        '&:hover': {
+                          bgcolor: 'action.hover'
+                        }
+                      }}
+                      secondaryAction={
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Tooltip title="Copy Public Key">
+                            <IconButton
+                              edge="end"
+                              onClick={() => handleCopyKey(key.publicKeys)}
+                            >
+                              <ContentCopy />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      }
+                    >
+                      <ListItemText
+                        primary={
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              fontFamily: 'monospace',
+                              wordBreak: 'break-all'
+                            }}
+                          >
+                            {key.publicKeys}
+                          </Typography>
+                        }
+                        secondary={
+                          <Typography variant="caption" color="text.secondary">
+                            Key #{index + 1}
+                          </Typography>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              ) : (
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  height: 200,
+                  color: 'text.secondary',
+                  gap: 2
+                }}>
+                  <Typography variant="body1">
+                    No keys found
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      handleProfileClose();
+                      navigate('/generate-keys');
+                    }}
+                    startIcon={<AccountBalanceWallet />}
+                  >
+                    Generate New Key
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleProfileClose}>Close</Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </ThemeProvider>
   );

@@ -6,6 +6,7 @@ import { auth, type AuthRequest } from "./middle";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { json } from "stream/consumers";
 import { JWT_SECRTE } from "./secrete";
+import { equal } from "assert";
 
 const payment: Router = express.Router();
 const prisma = new PrismaClient()
@@ -42,24 +43,24 @@ payment.get("/", async (req: AuthRequest, res: Response) => {
     res.send(data);
 })
 
-payment.get("/generate", async (req: AuthRequest, res: Response) => {
+payment.post("/generate", async (req: AuthRequest, res: Response) => {
 
     const auth = req.headers["auth"];
     const token = jwt.verify(auth, JWT_SECRTE);
-    console.log(token);
+    console.log(token.users.id);
     const keypair = Keypair.generate();
 
     const data = await prisma.keys.create({
         data: {
             privateKeys: keypair.secretKey.toString(),
             publicKeys: keypair.publicKey.toBase58().toString(),
-            userId: Number(req.userId)
+            userId: token.users.id
         },
         select: {
             publicKeys: true
         }
     })
-    res.send({ data });
+    res.send(data);
 })
 
 interface BalanceRequest {
@@ -180,7 +181,25 @@ payment.post("/p2p", async (req, res) => {
     }
 })
 
+payment.get("/keys",async(req,res)=>{
+    const token = req.headers["auth"]
+    if(!token){
+        res.json({
+            "message":"Authorzation Failed",
+        }).status(411)
+    }
+    const decode = jwt.verify(token,JWT_SECRTE);
+    const keys = await prisma.keys.findMany({
+        where:{
+            userId:decode.users.id
+        },
+        select:{
+            publicKeys:true
+        }
+    })
 
+    res.send(keys);
+})
 
 
 
