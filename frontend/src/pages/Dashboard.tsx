@@ -719,16 +719,27 @@ const Dashboard = () => {
           onClose={handleProfileClose}
           maxWidth="md"
           fullWidth
+          PaperProps={{
+            sx: {
+              bgcolor: 'background.paper',
+              backgroundImage: 'none',
+              borderRadius: 4,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+            }
+          }}
         >
-          <DialogTitle>
+          <DialogTitle sx={{ 
+            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            pb: 2
+          }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Avatar sx={{ bgcolor: 'primary.main' }}>U</Avatar>
-              <Typography variant="h6">User Profile</Typography>
+              <Typography variant="h6" sx={{ color: 'text.primary' }}>User Profile</Typography>
             </Box>
           </DialogTitle>
-          <DialogContent>
+          <DialogContent sx={{ mt: 2 }}>
             <Box sx={{ mt: 2 }}>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant="h6" gutterBottom sx={{ color: 'text.primary' }}>
                 Your Public Keys
               </Typography>
               {keys.length > 0 ? (
@@ -754,6 +765,7 @@ const Dashboard = () => {
                             <IconButton
                               edge="end"
                               onClick={() => handleCopyKey(key.publicKeys)}
+                              sx={{ color: 'text.secondary' }}
                             >
                               <ContentCopy />
                             </IconButton>
@@ -767,7 +779,8 @@ const Dashboard = () => {
                             variant="body1"
                             sx={{
                               fontFamily: 'monospace',
-                              wordBreak: 'break-all'
+                              wordBreak: 'break-all',
+                              color: 'text.primary'
                             }}
                           >
                             {key.publicKeys}
@@ -802,6 +815,12 @@ const Dashboard = () => {
                       navigate('/generate-keys');
                     }}
                     startIcon={<AccountBalanceWallet />}
+                    sx={{
+                      bgcolor: 'primary.main',
+                      '&:hover': {
+                        bgcolor: 'primary.dark'
+                      }
+                    }}
                   >
                     Generate New Key
                   </Button>
@@ -809,8 +828,25 @@ const Dashboard = () => {
               )}
             </Box>
           </DialogContent>
-          <DialogActions>
-            <Button onClick={handleProfileClose}>Close</Button>
+          <DialogActions sx={{ 
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+            pt: 2,
+            px: 3
+          }}>
+            <Button 
+              onClick={handleProfileClose}
+              variant="outlined"
+              sx={{
+                color: 'text.primary',
+                borderColor: 'rgba(255,255,255,0.2)',
+                '&:hover': {
+                  borderColor: 'white',
+                  bgcolor: 'rgba(255,255,255,0.1)'
+                }
+              }}
+            >
+              Close
+            </Button>
           </DialogActions>
         </Dialog>
       </Box>
