@@ -1,52 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { jwtDecode } from "jwt-decode";
-import {
-
-  Box,
-  Container,
-  Typography,
-  Card,
-  CardContent,
-  Avatar,
-  Button,
-  Grid,
-  TextField,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  IconButton,
-  Alert,
-  CircularProgress,
-} from '@mui/material';
-import { motion } from 'framer-motion';
-import {
-  AccountCircle,
-  Edit,
-  Security,
-  History,
-  Send,
-  Receipt,
-  Logout,
-} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { Shield, User, Settings, LogOut, Wallet, Activity, ArrowRight } from 'lucide-react';
-
-const MotionCard = motion(Card);
+import { Shield, User, LogOut, Wallet, Activity, ArrowRight } from 'lucide-react';
+import axios from 'axios';
 
 interface UserProfile {
   name: string;
   email: string;
-  walletAddress: string;
-  balance: string;
   joinDate: string;
 }
 
 interface CustomJwtPayload {
-  username: string;
-  email: string;
+  users: {
+    username: string;
+    email: string;
+  }
 }
+
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -54,10 +24,19 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [keys, setKeys] = useState<string>('');
+  const [balance, setBalance] = useState("")
+  const [activity, setActivity] = useState<any[]>([]);
+  const [loadingActivity, setLoadingActivity] = useState(false);
+  const [activityError, setActivityError] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
+    handleKeys();
+    handleBalance();
+    handleActivity();
   }, []);
+
 
   const checkAuth = () => {
     const token = localStorage.getItem('token');
@@ -65,12 +44,9 @@ const Profile = () => {
       try {
         const decoded = jwtDecode<CustomJwtPayload>(token);
         setIsAuthenticated(true);
-        console.log(decoded)
         setProfile({
           name: decoded.users.username as string || 'User',
           email: decoded.users.email as string || 'user@example.com',
-          walletAddress: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
-          balance: '10.5 SOL',
           joinDate: '2024-01-01',
         });
       } catch (err) {
@@ -82,6 +58,71 @@ const Profile = () => {
     setLoading(false);
   };
 
+
+  const handleKeys = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const data = await axios.get("http://localhost:3000/payments/keys", {
+          headers: {
+            auth: token
+          }
+        });
+        setKeys(data.data[0].publicKeys)
+      } catch (e) {
+        alert(e);
+      }
+    }
+  };
+  const handleBalance = async () => {
+    const token = localStorage.getItem("token")
+    const balance = await axios.post("http://localhost:3000/payments/balance", {
+      publicKey: "7a1BCSDbqcSZr8TQ18E1EidCLnNt9Rt4fH1bunbAtHpQ"
+    }, {
+      headers: {
+        auth: token
+      }
+
+    })
+
+    setBalance(balance.data.balance);
+  }
+  const handleActivity = async () => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+      alert("No token found");
+      setActivityError("Please login to view activity");
+      return;
+    }
+    setLoadingActivity(true);
+    setActivityError(null);
+    try {
+      console.log("Fetching activity with token:", token);
+      const activity = await axios.get("http://localhost:3000/payments/history", {
+        headers: {
+          auth: token,
+        }
+      })
+      
+      const activityData = Array.isArray(activity.data) ? activity.data : [activity.data];
+      setActivity(activityData);
+      if (activityData.length === 0) {
+        setActivityError("No transactions found");
+      }
+    } catch (error) {
+      console.error("Error fetching activity:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Error response:", error.response?.data);
+        console.error("Error status:", error.response?.status);
+        setActivityError(error.response?.data?.message || "Failed to load activity");
+      } else {
+        setActivityError("Failed to load activity");
+      }
+      setActivity([]);
+    } finally {
+      setLoadingActivity(false);
+    }
+  }
   const handleLogout = () => {
     localStorage.removeItem('token');
     setIsAuthenticated(false);
@@ -123,16 +164,18 @@ const Profile = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <User className="w-8 h-8 text-white" />
+                <span className="text-3xl">🦄</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">{profile?.name}</h1>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  {profile?.name}
+                </h1>
                 <p className="text-slate-400">{profile?.email}</p>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center text-slate-400 hover:text-white"
+              className="flex items-center text-slate-400 hover:text-white transition-colors"
             >
               <LogOut className="w-5 h-5 mr-2" />
               Logout
@@ -147,8 +190,26 @@ const Profile = () => {
               <h2 className="text-xl font-semibold text-white">Wallet Balance</h2>
               <Wallet className="w-6 h-6 text-purple-500" />
             </div>
-            <div className="text-3xl font-bold text-white mb-2">{profile?.balance}</div>
-            <p className="text-slate-400 text-sm">{profile?.walletAddress}</p>
+            <div className="text-3xl font-bold text-white mb-2">{balance}</div>
+            <button onClick={() => {
+              handleBalance
+              console.log(balance)
+            }} className=' h-10 w-40  bg-violet-700 rounded-2xl'>Check Balance</button>
+            <div className="flex items-center justify-between">
+              <p className="text-slate-400 text-sm font-mono break-all">{keys}</p>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(keys || '');
+                  // You might want to add a toast notification here
+                }}
+                className="ml-2 p-2 text-slate-400 hover:text-white transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                  <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6">
@@ -171,7 +232,10 @@ const Profile = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <button className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6 hover:bg-slate-800/70 transition-colors">
+          <button 
+            onClick={() => navigate('/send')}
+            className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6 hover:bg-slate-800/70 transition-colors"
+          >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">Send</h3>
               <ArrowRight className="w-5 h-5 text-purple-500" />
@@ -179,7 +243,10 @@ const Profile = () => {
             <p className="text-slate-400 text-sm">Transfer funds to another wallet</p>
           </button>
 
-          <button className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6 hover:bg-slate-800/70 transition-colors">
+          <button 
+            onClick={() => navigate('/receive')}
+            className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6 hover:bg-slate-800/70 transition-colors"
+          >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">Receive</h3>
               <ArrowRight className="w-5 h-5 text-purple-500" />
@@ -187,13 +254,72 @@ const Profile = () => {
             <p className="text-slate-400 text-sm">Get your wallet address</p>
           </button>
 
-          <button className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6 hover:bg-slate-800/70 transition-colors">
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6 hover:bg-slate-800/70 transition-colors"
+          >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">Activity</h3>
-              <Activity className="w-5 h-5 text-purple-500" />
+              <h3 className="text-lg font-semibold text-white">Dashboard</h3>
+              <ArrowRight className="w-5 h-5 text-purple-500" />
             </div>
-            <p className="text-slate-400 text-sm">View transaction history</p>
+            <p className="text-slate-400 text-sm">Return to main dashboard</p>
           </button>
+        </div>
+
+        {/* Activity Section */}
+        <div className="mt-8">
+          <div className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Transaction History</h2>
+              <Activity className="w-6 h-6 text-purple-500" />
+            </div>
+            
+            {loadingActivity ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+              </div>
+            ) : activityError ? (
+              <div className="text-red-400 text-center py-4">{activityError}</div>
+            ) : activity && activity.length > 0 ? (
+              <div className="space-y-4">
+                {activity.map((item, index) => (
+                  <div 
+                    key={index} 
+                    className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:bg-slate-700/50 transition-colors"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-slate-400 text-sm">From</p>
+                        <p className="text-white font-mono break-all">{item.fromKey}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400 text-sm">To</p>
+                        <p className="text-white font-mono break-all">{item.toKey}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-slate-400 text-sm">Amount</p>
+                        <p className="text-white">{item.amount} SOL</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400 text-sm">Date</p>
+                        <p className="text-white">{new Date(item.timestamp).toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-slate-400 text-sm">Signature</p>
+                      <p className="text-white font-mono text-sm break-all">{item.signature}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-slate-400">
+                No transactions found
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

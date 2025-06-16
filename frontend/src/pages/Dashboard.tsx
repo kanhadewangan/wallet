@@ -3,12 +3,12 @@ import {
   Box,
   Container,
   Typography,
-  Paper,
+
   Grid,
   Button,
-  TextField,
+  
   CircularProgress,
-  Alert,
+
   Card,
   CardContent,
   IconButton,
@@ -20,13 +20,8 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemAvatar,
-  Divider,
-  Chip,
-  LinearProgress,
   ThemeProvider,
   createTheme,
-  Badge,
   Tooltip,
   Snackbar,
   Dialog,
@@ -110,7 +105,7 @@ const Dashboard = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
-  useEffect( () => {
+  useEffect(() => {
     checkAuth();
   }, []);
 
@@ -122,9 +117,9 @@ const Dashboard = () => {
       // Mock balance data - replace with actual API call
       setBalance('10.5');
     }
-    const response = await axios.get("http://localhost:3000/payments/keys",  {
-      headers:{
-        auth:token
+    const response = await axios.get("http://localhost:3000/payments/keys", {
+      headers: {
+        auth: token
       }
     });
 
@@ -132,7 +127,7 @@ const Dashboard = () => {
     setKeys(response.data);
     setLoading(false);
   };
-  
+
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -212,11 +207,12 @@ const Dashboard = () => {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <Box  sx={{ flexGrow: 1, bgcolor: 'background.default', minHeight: '100vh' }}>
-        <AppBar 
-          position="static" 
-          sx={{ 
-            bgcolor: '#0A0B0D',
+      <Box sx={{ flexGrow: 1, bgcolor: 'background.default', minHeight: '100vh', background: 'linear-gradient(135deg, #0A0B0D 0%, #1A1B1F 100%)' }}>
+        <AppBar
+          position="static"
+          sx={{
+            bgcolor: 'rgba(10, 11, 13, 0.8)',
+            backdropFilter: 'blur(10px)',
             borderBottom: '1px solid rgba(255,255,255,0.1)',
             boxShadow: 'none'
           }}
@@ -230,24 +226,29 @@ const Dashboard = () => {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" component="div" sx={{ 
+            <Typography variant="h6" component="div" sx={{
               flexGrow: 1,
-              background: 'linear-gradient(to right, #9945FF, #14F195)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
+
+              fontWeight: 'bold'
             }}>
-              Solana Wallet
+              <span className="text-3xl">🦄</span> GenNZ Wallet
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
                 gap: 1,
-                bgcolor: '#1C1D21',
+                bgcolor: 'rgba(28, 29, 33, 0.8)',
+                backdropFilter: 'blur(10px)',
                 px: 2,
                 py: 1,
                 borderRadius: 2,
-                border: '1px solid #2D2E32'
+                border: '1px solid rgba(45, 46, 50, 0.5)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  borderColor: '#14F195',
+                  boxShadow: '0 0 20px rgba(20, 241, 149, 0.1)'
+                }
               }}>
                 <Typography variant="body2" sx={{ color: '#14F195' }}>
                   {keys[0]?.publicKeys || 'No keys found'}
@@ -256,18 +257,41 @@ const Dashboard = () => {
                   <IconButton
                     size="small"
                     onClick={() => handleCopyKey(keys[0]?.publicKeys)}
-                    sx={{ color: '#14F195' }}
+                    sx={{
+                      color: '#14F195',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'scale(1.1)',
+                        color: '#9945FF'
+                      }
+                    }}
                   >
                     <ContentCopy fontSize="small" />
                   </IconButton>
                 </Tooltip>
               </Box>
-              <IconButton color="inherit">
+              <IconButton
+                color="inherit"
+                sx={{
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'scale(1.1)',
+                    color: '#14F195'
+                  }
+                }}
+              >
                 <Notifications />
               </IconButton>
               <IconButton
                 color="inherit"
                 onClick={handleProfileClick}
+                sx={{
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'scale(1.1)',
+                    color: '#14F195'
+                  }
+                }}
               >
                 <AccountCircle />
               </IconButton>
@@ -292,89 +316,75 @@ const Dashboard = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
                 sx={{
-                  bgcolor: '#1C1D21',
-                  backgroundImage: 'none',
+                  bgcolor: 'rgba(28, 29, 33, 0.8)',
+                  backdropFilter: 'blur(10px)',
                   borderRadius: 4,
                   boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-                  border: '1px solid #2D2E32',
-                  height: '100%'
+                  border: '1px solid rgba(45, 46, 50, 0.5)',
+                  height: '100%',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+                    transform: 'translateY(-2px)'
+                  }
                 }}
               >
                 <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-                  <Typography variant="h6" gutterBottom sx={{ 
-                    color: '#14F195',
+                  <Typography variant="h6" gutterBottom sx={{
                     mb: 3,
                     background: 'linear-gradient(to right, #9945FF, #14F195)',
                     WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
+                    WebkitTextFillColor: 'transparent',
+                    fontWeight: 'bold'
                   }}>
                     Market Stats
                   </Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Box sx={{ 
-                        p: 2, 
-                        borderRadius: 2,
-                        bgcolor: '#2D2E32',
-                        textAlign: 'center',
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        border: '1px solid #3D3E42'
-                      }}>
-                        <Typography variant="h4" sx={{ color: '#14F195', mb: 1 }}>$45,231</Typography>
-                        <Typography variant="body2" color="text.secondary">Total Volume</Typography>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Box sx={{ 
-                        p: 2, 
-                        borderRadius: 2,
-                        bgcolor: '#2D2E32',
-                        textAlign: 'center',
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        border: '1px solid #3D3E42'
-                      }}>
-                        <Typography variant="h4" sx={{ color: '#14F195', mb: 1 }}>2,345</Typography>
-                        <Typography variant="body2" color="text.secondary">Active Users</Typography>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Box sx={{ 
-                        p: 2, 
-                        borderRadius: 2,
-                        bgcolor: '#2D2E32',
-                        textAlign: 'center',
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        border: '1px solid #3D3E42'
-                      }}>
-                        <Typography variant="h4" sx={{ color: '#14F195', mb: 1 }}>12.5%</Typography>
-                        <Typography variant="body2" color="text.secondary">Growth Rate</Typography>
-                      </Box>
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Box sx={{ 
-                        p: 2, 
-                        borderRadius: 2,
-                        bgcolor: '#2D2E32',
-                        textAlign: 'center',
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        border: '1px solid #3D3E42'
-                      }}>
-                        <Typography variant="h4" sx={{ color: '#14F195', mb: 1 }}>98.2%</Typography>
-                        <Typography variant="body2" color="text.secondary">Uptime</Typography>
-                      </Box>
-                    </Grid>
+                    {marketStats.map((stat, index) => (
+                      <Grid item xs={12} sm={6} md={3} key={index}>
+                        <Box sx={{
+                          p: 2,
+                          borderRadius: 2,
+                          bgcolor: 'rgba(45, 46, 50, 0.5)',
+                          backdropFilter: 'blur(10px)',
+                          textAlign: 'center',
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'center',
+                          border: '1px solid rgba(61, 62, 66, 0.5)',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                            borderColor: '#14F195'
+                          }
+                        }}>
+                          <Typography variant="h4" sx={{
+                            color: '#14F195',
+                            mb: 1,
+                            fontWeight: 'bold'
+                          }}>
+                            {stat.value}
+                          </Typography>
+                          <Typography variant="body2" sx={{
+                            color: 'rgba(255,255,255,0.7)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 1
+                          }}>
+                            {stat.label}
+                            <span style={{
+                              color: stat.change >= 0 ? '#14F195' : '#FF6B6B',
+                              fontSize: '0.8rem'
+                            }}>
+                              {stat.change >= 0 ? '↑' : '↓'} {Math.abs(stat.change)}%
+                            </span>
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    ))}
                   </Grid>
                 </CardContent>
               </MotionCard>
@@ -417,21 +427,26 @@ const Dashboard = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
                 sx={{
-                  bgcolor: '#1C1D21',
-                  backgroundImage: 'none',
+                  bgcolor: 'rgba(28, 29, 33, 0.8)',
+                  backdropFilter: 'blur(10px)',
                   borderRadius: 4,
                   boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-                  border: '1px solid #2D2E32',
-                  height: '100%'
+                  border: '1px solid rgba(45, 46, 50, 0.5)',
+                  height: '100%',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+                    transform: 'translateY(-2px)'
+                  }
                 }}
               >
                 <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h6" sx={{ 
-                      color: '#14F195',
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                    <Typography variant="h6" sx={{
                       background: 'linear-gradient(to right, #9945FF, #14F195)',
                       WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent'
+                      WebkitTextFillColor: 'transparent',
+                      fontWeight: 'bold'
                     }}>
                       Token List
                     </Typography>
@@ -440,10 +455,13 @@ const Dashboard = () => {
                       startIcon={<Add />}
                       sx={{
                         color: '#14F195',
-                        borderColor: '#2D2E32',
+                        borderColor: 'rgba(45, 46, 50, 0.5)',
+                        transition: 'all 0.3s ease',
                         '&:hover': {
                           borderColor: '#14F195',
-                          bgcolor: 'rgba(20, 241, 149, 0.1)'
+                          bgcolor: 'rgba(20, 241, 149, 0.1)',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 4px 20px rgba(20, 241, 149, 0.1)'
                         }
                       }}
                     >
@@ -457,24 +475,44 @@ const Dashboard = () => {
                         sx={{
                           mb: 1,
                           borderRadius: 2,
-                          bgcolor: '#2D2E32',
-                          border: '1px solid #3D3E42',
+                          bgcolor: 'rgba(45, 46, 50, 0.5)',
+                          backdropFilter: 'blur(10px)',
+                          border: '1px solid rgba(61, 62, 66, 0.5)',
+                          transition: 'all 0.3s ease',
                           '&:hover': {
-                            bgcolor: '#3D3E42'
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                            borderColor: '#14F195'
                           }
                         }}
                       >
                         <ListItemIcon>
-                          <Avatar src={token.icon} alt={token.name} />
+                          <Avatar sx={{
+                            bgcolor: 'rgba(20, 241, 149, 0.1)',
+                            border: '1px solid rgba(20, 241, 149, 0.2)'
+                          }}>
+                            {token.icon}
+                          </Avatar>
                         </ListItemIcon>
                         <ListItemText
                           primary={token.name}
-                          secondary={`${token.balance} ${token.symbol}`}
-                          primaryTypographyProps={{ color: '#14F195' }}
-                          secondaryTypographyProps={{ color: 'text.secondary' }}
+                          secondary={`$${token.price.toFixed(2)}`}
+                          primaryTypographyProps={{
+                            color: '#14F195',
+                            fontWeight: 'bold'
+                          }}
+                          secondaryTypographyProps={{
+                            color: 'rgba(255,255,255,0.7)'
+                          }}
                         />
-                        <Typography variant="body1" sx={{ color: '#14F195' }}>
-                          ${token.value}
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            color: token.change >= 0 ? '#14F195' : '#FF6B6B',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          {token.change >= 0 ? '+' : ''}{token.change}%
                         </Typography>
                       </ListItem>
                     ))}
@@ -492,19 +530,26 @@ const Dashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                     sx={{
-                      bgcolor: '#1C1D21',
-                      backgroundImage: 'none',
+                      bgcolor: 'rgba(28, 29, 33, 0.8)',
+                      backdropFilter: 'blur(10px)',
                       borderRadius: 4,
                       boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-                      border: '1px solid #2D2E32'
+                      border: '1px solid rgba(45, 46, 50, 0.5)',
+                      height: '100%',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+                        transform: 'translateY(-2px)'
+                      }
                     }}
                   >
                     <CardContent>
-                      <Typography variant="h6" gutterBottom sx={{ 
-                        color: '#14F195',
+                      <Typography variant="h6" gutterBottom sx={{
                         background: 'linear-gradient(to right, #9945FF, #14F195)',
                         WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent'
+                        WebkitTextFillColor: 'transparent',
+                        fontWeight: 'bold',
+                        mb: 3
                       }}>
                         Quick Actions
                       </Typography>
@@ -515,11 +560,13 @@ const Dashboard = () => {
                             variant="contained"
                             startIcon={<Send />}
                             onClick={() => navigate('/send')}
-                            sx={{ 
+                            sx={{
                               borderRadius: 2,
                               background: 'linear-gradient(to right, #9945FF, #14F195)',
+                              transition: 'all 0.3s ease',
                               '&:hover': {
-                                opacity: 0.9
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 20px rgba(20, 241, 149, 0.2)'
                               }
                             }}
                           >
@@ -531,13 +578,17 @@ const Dashboard = () => {
                             fullWidth
                             variant="outlined"
                             startIcon={<QrCode />}
+                            onClick={() => navigate('/receive')}
                             sx={{
                               borderRadius: 2,
                               color: '#14F195',
-                              borderColor: '#2D2E32',
+                              borderColor: 'rgba(45, 46, 50, 0.5)',
+                              transition: 'all 0.3s ease',
                               '&:hover': {
                                 borderColor: '#14F195',
-                                bgcolor: 'rgba(20, 241, 149, 0.1)'
+                                bgcolor: 'rgba(20, 241, 149, 0.1)',
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 20px rgba(20, 241, 149, 0.1)'
                               }
                             }}
                           >
@@ -552,10 +603,13 @@ const Dashboard = () => {
                             sx={{
                               borderRadius: 2,
                               color: '#14F195',
-                              borderColor: '#2D2E32',
+                              borderColor: 'rgba(45, 46, 50, 0.5)',
+                              transition: 'all 0.3s ease',
                               '&:hover': {
                                 borderColor: '#14F195',
-                                bgcolor: 'rgba(20, 241, 149, 0.1)'
+                                bgcolor: 'rgba(20, 241, 149, 0.1)',
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 20px rgba(20, 241, 149, 0.1)'
                               }
                             }}
                           >
@@ -570,14 +624,39 @@ const Dashboard = () => {
                             sx={{
                               borderRadius: 2,
                               color: '#14F195',
-                              borderColor: '#2D2E32',
+                              borderColor: 'rgba(45, 46, 50, 0.5)',
+                              transition: 'all 0.3s ease',
                               '&:hover': {
                                 borderColor: '#14F195',
-                                bgcolor: 'rgba(20, 241, 149, 0.1)'
+                                bgcolor: 'rgba(20, 241, 149, 0.1)',
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 20px rgba(20, 241, 149, 0.1)'
                               }
                             }}
                           >
                             History
+                          </Button>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Button
+                            fullWidth
+                            variant="outlined"
+                            startIcon={<AccountCircle />}
+                            onClick={() => navigate('/profile')}
+                            sx={{
+                              borderRadius: 2,
+                              color: '#14F195',
+                              borderColor: 'rgba(45, 46, 50, 0.5)',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                borderColor: '#14F195',
+                                bgcolor: 'rgba(20, 241, 149, 0.1)',
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 20px rgba(20, 241, 149, 0.1)'
+                              }
+                            }}
+                          >
+                            Profile
                           </Button>
                         </Grid>
                       </Grid>
@@ -591,19 +670,26 @@ const Dashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.3 }}
                     sx={{
-                      bgcolor: '#1C1D21',
-                      backgroundImage: 'none',
+                      bgcolor: 'rgba(28, 29, 33, 0.8)',
+                      backdropFilter: 'blur(10px)',
                       borderRadius: 4,
                       boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-                      border: '1px solid #2D2E32'
+                      border: '1px solid rgba(45, 46, 50, 0.5)',
+                      height: '100%',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+                        transform: 'translateY(-2px)'
+                      }
                     }}
                   >
                     <CardContent>
-                      <Typography variant="h6" gutterBottom sx={{ 
-                        color: '#14F195',
+                      <Typography variant="h6" gutterBottom sx={{
                         background: 'linear-gradient(to right, #9945FF, #14F195)',
                         WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent'
+                        WebkitTextFillColor: 'transparent',
+                        fontWeight: 'bold',
+                        mb: 3
                       }}>
                         Security
                       </Typography>
@@ -613,10 +699,11 @@ const Dashboard = () => {
                           sx={{
                             borderRadius: 2,
                             mb: 1,
-                            bgcolor: '#2D2E32',
-                            border: '1px solid #3D3E42',
+                            bgcolor: 'rgba(45, 46, 50, 0.5)',
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(61, 62, 66, 0.5)',
                             '&:hover': {
-                              bgcolor: '#3D3E42'
+                              bgcolor: 'rgba(61, 62, 66, 0.7)'
                             }
                           }}
                         >
@@ -634,10 +721,11 @@ const Dashboard = () => {
                           button
                           sx={{
                             borderRadius: 2,
-                            bgcolor: '#2D2E32',
-                            border: '1px solid #3D3E42',
+                            bgcolor: 'rgba(45, 46, 50, 0.5)',
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(61, 62, 66, 0.5)',
                             '&:hover': {
-                              bgcolor: '#3D3E42'
+                              bgcolor: 'rgba(61, 62, 66, 0.7)'
                             }
                           }}
                         >
@@ -690,7 +778,7 @@ const Dashboard = () => {
             }
           }}
         >
-          <DialogTitle sx={{ 
+          <DialogTitle sx={{
             borderBottom: '1px solid rgba(255,255,255,0.1)',
             pb: 2
           }}>
@@ -705,7 +793,7 @@ const Dashboard = () => {
                 Your Public Keys
               </Typography>
               {keys.length > 0 ? (
-                <List sx={{ 
+                <List sx={{
                   bgcolor: 'background.default',
                   borderRadius: 2,
                   p: 1
@@ -758,10 +846,10 @@ const Dashboard = () => {
                   ))}
                 </List>
               ) : (
-                <Box sx={{ 
-                  display: 'flex', 
+                <Box sx={{
+                  display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'center', 
+                  alignItems: 'center',
                   justifyContent: 'center',
                   height: 200,
                   color: 'text.secondary',
@@ -790,12 +878,12 @@ const Dashboard = () => {
               )}
             </Box>
           </DialogContent>
-          <DialogActions sx={{ 
+          <DialogActions sx={{
             borderTop: '1px solid rgba(255,255,255,0.1)',
             pt: 2,
             px: 3
           }}>
-            <Button 
+            <Button
               onClick={handleProfileClose}
               variant="outlined"
               sx={{
