@@ -164,16 +164,18 @@ const Profile = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <User className="w-8 h-8 text-white" />
+                <span className="text-3xl">🦄</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">{profile?.name}</h1>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  {profile?.name}
+                </h1>
                 <p className="text-slate-400">{profile?.email}</p>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center text-slate-400 hover:text-white"
+              className="flex items-center text-slate-400 hover:text-white transition-colors"
             >
               <LogOut className="w-5 h-5 mr-2" />
               Logout
@@ -230,7 +232,10 @@ const Profile = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <button className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6 hover:bg-slate-800/70 transition-colors">
+          <button 
+            onClick={() => navigate('/send')}
+            className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6 hover:bg-slate-800/70 transition-colors"
+          >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">Send</h3>
               <ArrowRight className="w-5 h-5 text-purple-500" />
@@ -238,7 +243,10 @@ const Profile = () => {
             <p className="text-slate-400 text-sm">Transfer funds to another wallet</p>
           </button>
 
-          <button className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6 hover:bg-slate-800/70 transition-colors">
+          <button 
+            onClick={() => navigate('/receive')}
+            className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6 hover:bg-slate-800/70 transition-colors"
+          >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">Receive</h3>
               <ArrowRight className="w-5 h-5 text-purple-500" />
@@ -246,37 +254,72 @@ const Profile = () => {
             <p className="text-slate-400 text-sm">Get your wallet address</p>
           </button>
 
-          <button className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6 hover:bg-slate-800/70 transition-colors">
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6 hover:bg-slate-800/70 transition-colors"
+          >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">Activity</h3>
-              <Activity className="w-5 h-5 text-purple-500" />
+              <h3 className="text-lg font-semibold text-white">Dashboard</h3>
+              <ArrowRight className="w-5 h-5 text-purple-500" />
             </div>
-            <div className="space-y-2">
-              {loadingActivity ? (
-                <div className="flex justify-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-purple-500"></div>
-                </div>
-              ) : activityError ? (
-                <p className="text-red-400 text-sm">{activityError}</p>
-              ) : activity ? (
-                activity.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between text-sm border-b border-slate-700 pb-2">
-                    <div>
-                      <p className="text-white">From: {item.fromKey?.slice(0, 8)}...</p>
-                      <p className="text-white">To: {item.toKey?.slice(0, 8)}...</p>
-                      <p className="text-slate-400">Amount: {item.amount} SOL</p>
-                      <p className="text-slate-400 text-xs">Signature: {item.signature?.slice(0, 8)}...</p>
+            <p className="text-slate-400 text-sm">Return to main dashboard</p>
+          </button>
+        </div>
+
+        {/* Activity Section */}
+        <div className="mt-8">
+          <div className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Transaction History</h2>
+              <Activity className="w-6 h-6 text-purple-500" />
+            </div>
+            
+            {loadingActivity ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+              </div>
+            ) : activityError ? (
+              <div className="text-red-400 text-center py-4">{activityError}</div>
+            ) : activity && activity.length > 0 ? (
+              <div className="space-y-4">
+                {activity.map((item, index) => (
+                  <div 
+                    key={index} 
+                    className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:bg-slate-700/50 transition-colors"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-slate-400 text-sm">From</p>
+                        <p className="text-white font-mono break-all">{item.fromKey}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400 text-sm">To</p>
+                        <p className="text-white font-mono break-all">{item.toKey}</p>
+                      </div>
                     </div>
-                    <div className="text-slate-400">
-                      {new Date(item.timestamp).toLocaleDateString()}
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-slate-400 text-sm">Amount</p>
+                        <p className="text-white">{item.amount} SOL</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400 text-sm">Date</p>
+                        <p className="text-white">{new Date(item.timestamp).toLocaleString()}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-slate-400 text-sm">Signature</p>
+                      <p className="text-white font-mono text-sm break-all">{item.signature}</p>
                     </div>
                   </div>
-                ))
-              ) : (
-                <p className="text-slate-400 text-sm">No recent activity</p>
-              )}
-            </div>
-          </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-slate-400">
+                No transactions found
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
