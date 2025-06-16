@@ -172,7 +172,7 @@ payment.post("/p2p", async (req, res) => {
             data: {
                 toKey: toKey,
                 fromKey: fromKey,
-                amount: parseInt(amount),
+                amount: amount,
                 userId: 1,
                 signature: signature
             }
@@ -210,6 +210,39 @@ payment.get("/keys",async(req,res)=>{
     res.send(keys);
 })
 
+payment.get("/history", async (req, res) => {
+    try {
+        const token = req.headers["auth"];
+        if (!token || typeof token !== 'string') {
+            console.log("No token provided");
+            return res.status(401).json({ message: "Auth Required" });
+        }
+
+        const decode = jwt.verify(token, JWT_SECRTE) as { id: string };
+        console.log(decode.users.id)
+        const history = await prisma.payment.findFirst({
+        where:{
+            userId:decode.users.id,
+        },
+            select: {
+                fromKey: true,
+                toKey: true,
+                amount: true,
+                timestamp: true,
+                signature: true
+            },
+            orderBy: {
+                timestamp: 'desc'
+            }
+        });
+
+        console.log( "History:", history);
+        res.json(history);
+    } catch (error) {
+        console.error("Error in history endpoint:", error);
+        res.status(500).json({ message: "Internal server error", error: error instanceof Error ? error.message : "Unknown error" });
+    }
+});
 
 
 export default payment;

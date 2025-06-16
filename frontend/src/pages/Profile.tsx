@@ -1,45 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { jwtDecode } from "jwt-decode";
-import {
-  Box,
-  Container,
-  Typography,
-  Card,
-  CardContent,
-  Avatar,
-  Button,
-  Grid,
-  TextField,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  IconButton,
-  Alert,
-  CircularProgress,
-} from '@mui/material';
-import { motion } from 'framer-motion';
-import {
-  AccountCircle,
-  Edit,
-  Security,
-  History,
-  Send,
-  Receipt,
-  Logout,
-} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { Shield, User, Settings, LogOut, Wallet, Activity, ArrowRight } from 'lucide-react';
+import { Shield, User, LogOut, Wallet, Activity, ArrowRight } from 'lucide-react';
 import axios from 'axios';
-
-const MotionCard = motion(Card);
 
 interface UserProfile {
   name: string;
   email: string;
-  walletAddress: string;
-  balance: string;
   joinDate: string;
 }
 
@@ -50,6 +17,7 @@ interface CustomJwtPayload {
   }
 }
 
+
 const Profile = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -57,11 +25,18 @@ const Profile = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [keys, setKeys] = useState<string>('');
+  const [balance, setBalance] = useState("")
+  const [activity, setActivity] = useState<any[]>([]);
+  const [loadingActivity, setLoadingActivity] = useState(false);
+  const [activityError, setActivityError] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
     handleKeys();
+    handleBalance();
+    handleActivity();
   }, []);
+
 
   const checkAuth = () => {
     const token = localStorage.getItem('token');
@@ -69,12 +44,9 @@ const Profile = () => {
       try {
         const decoded = jwtDecode<CustomJwtPayload>(token);
         setIsAuthenticated(true);
-        console.log(decoded);
         setProfile({
           name: decoded.users.username as string || 'User',
           email: decoded.users.email as string || 'user@example.com',
-          walletAddress: keys,
-          balance: '10.5 SOL',
           joinDate: '2024-01-01',
         });
       } catch (err) {
@@ -86,24 +58,71 @@ const Profile = () => {
     setLoading(false);
   };
 
+
   const handleKeys = async () => {
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        const decoded = jwtDecode<CustomJwtPayload>(token);
         const data = await axios.get("http://localhost:3000/payments/keys", {
           headers: {
             auth: token
           }
         });
         setKeys(data.data[0].publicKeys)
-        console.log(keys);
       } catch (e) {
-        console.log(e);
+        alert(e);
       }
     }
   };
+  const handleBalance = async () => {
+    const token = localStorage.getItem("token")
+    const balance = await axios.post("http://localhost:3000/payments/balance", {
+      publicKey: "7a1BCSDbqcSZr8TQ18E1EidCLnNt9Rt4fH1bunbAtHpQ"
+    }, {
+      headers: {
+        auth: token
+      }
 
+    })
+
+    setBalance(balance.data.balance);
+  }
+  const handleActivity = async () => {
+    const token = localStorage.getItem("token")
+    if (!token) {
+      alert("No token found");
+      setActivityError("Please login to view activity");
+      return;
+    }
+    setLoadingActivity(true);
+    setActivityError(null);
+    try {
+      console.log("Fetching activity with token:", token);
+      const activity = await axios.get("http://localhost:3000/payments/history", {
+        headers: {
+          auth: token,
+        }
+      })
+      
+      const activityData = Array.isArray(activity.data) ? activity.data : [activity.data];
+      setActivity(activityData);
+      if (activityData.length === 0) {
+        setActivityError("No transactions found");
+      }
+    } catch (error) {
+      console.error("Error fetching activity:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Error response:", error.response?.data);
+        console.error("Error status:", error.response?.status);
+        setActivityError(error.response?.data?.message || "Failed to load activity");
+      } else {
+        setActivityError("Failed to load activity");
+      }
+      setActivity([]);
+    } finally {
+      setLoadingActivity(false);
+    }
+  }
   const handleLogout = () => {
     localStorage.removeItem('token');
     setIsAuthenticated(false);
@@ -169,7 +188,11 @@ const Profile = () => {
               <h2 className="text-xl font-semibold text-white">Wallet Balance</h2>
               <Wallet className="w-6 h-6 text-purple-500" />
             </div>
-            <div className="text-3xl font-bold text-white mb-2">{profile?.balance}</div>
+            <div className="text-3xl font-bold text-white mb-2">{balance}</div>
+            <button onClick={() => {
+              handleBalance
+              console.log(balance)
+            }} className=' h-10 w-40  bg-violet-700 rounded-2xl'>Check Balance</button>
             <div className="flex items-center justify-between">
               <p className="text-slate-400 text-sm font-mono break-all">{keys}</p>
               <button
@@ -228,7 +251,31 @@ const Profile = () => {
               <h3 className="text-lg font-semibold text-white">Activity</h3>
               <Activity className="w-5 h-5 text-purple-500" />
             </div>
-            <p className="text-slate-400 text-sm">View transaction history</p>
+            <div className="space-y-2">
+              {loadingActivity ? (
+                <div className="flex justify-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-purple-500"></div>
+                </div>
+              ) : activityError ? (
+                <p className="text-red-400 text-sm">{activityError}</p>
+              ) : activity ? (
+                activity.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between text-sm border-b border-slate-700 pb-2">
+                    <div>
+                      <p className="text-white">From: {item.fromKey?.slice(0, 8)}...</p>
+                      <p className="text-white">To: {item.toKey?.slice(0, 8)}...</p>
+                      <p className="text-slate-400">Amount: {item.amount} SOL</p>
+                      <p className="text-slate-400 text-xs">Signature: {item.signature?.slice(0, 8)}...</p>
+                    </div>
+                    <div className="text-slate-400">
+                      {new Date(item.timestamp).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-slate-400 text-sm">No recent activity</p>
+              )}
+            </div>
           </button>
         </div>
       </div>
