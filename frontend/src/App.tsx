@@ -7,6 +7,7 @@ import HeroPage from './pages/hero/page';
 import Profile from './pages/Profile';
 import GenerateKeys from './pages/GenerateKeys';
 import SendToken from './pages/SendToken';
+import NotFound from './pages/NotFound';
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="/" element={<HeroPage/>}/>
         <Route path="/profile" element={<Profile/>}/>
         <Route path="/generate-keys" element={<GenerateKeys/>}/>
+        <Route path='/*' element={<NotFound />}/>
       </Routes>
     </Router>
   )

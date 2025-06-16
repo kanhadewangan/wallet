@@ -580,6 +580,25 @@ const Dashboard = () => {
                             History
                           </Button>
                         </Grid>
+                        <Grid item xs={6}>
+                          <Button
+                            fullWidth
+                            variant="outlined"
+                            startIcon={<AccountCircle />}
+                            onClick={() => navigate('/profile')}
+                            sx={{
+                              borderRadius: 2,
+                              color: '#14F195',
+                              borderColor: '#2D2E32',
+                              '&:hover': {
+                                borderColor: '#14F195',
+                                bgcolor: 'rgba(20, 241, 149, 0.1)'
+                              }
+                            }}
+                          >
+                            Profile
+                          </Button>
+                        </Grid>
                       </Grid>
                     </CardContent>
                   </MotionCard>

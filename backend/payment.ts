@@ -117,6 +117,15 @@ payment.post("/balance", async (req, res) => {
 })
 
 payment.post("/p2p", async (req, res) => {
+    const auth = req.headers["auth"];
+    if(!auth){
+        res.json({
+            "message":"Not authorize",
+            "status":411
+        })
+    }
+    const token = jwt.verify(auth,JWT_SECRTE);
+        console.log(token)
     const { fromKey, toKey, amount } = req.body;
 
     if (!fromKey || !toKey || !amount) {

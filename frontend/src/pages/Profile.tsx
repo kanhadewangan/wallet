@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { jwtDecode } from "jwt-decode";
 import {
-
   Box,
   Container,
   Typography,
@@ -32,6 +31,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { Shield, User, Settings, LogOut, Wallet, Activity, ArrowRight } from 'lucide-react';
+import axios from 'axios';
 
 const MotionCard = motion(Card);
 
@@ -44,8 +44,10 @@ interface UserProfile {
 }
 
 interface CustomJwtPayload {
-  username: string;
-  email: string;
+  users: {
+    username: string;
+    email: string;
+  }
 }
 
 const Profile = () => {
@@ -54,9 +56,11 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [keys, setKeys] = useState<string>('');
 
   useEffect(() => {
     checkAuth();
+    handleKeys();
   }, []);
 
   const checkAuth = () => {
@@ -65,11 +69,11 @@ const Profile = () => {
       try {
         const decoded = jwtDecode<CustomJwtPayload>(token);
         setIsAuthenticated(true);
-        console.log(decoded)
+        console.log(decoded);
         setProfile({
           name: decoded.users.username as string || 'User',
           email: decoded.users.email as string || 'user@example.com',
-          walletAddress: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
+          walletAddress: keys,
           balance: '10.5 SOL',
           joinDate: '2024-01-01',
         });
@@ -80,6 +84,24 @@ const Profile = () => {
       }
     }
     setLoading(false);
+  };
+
+  const handleKeys = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decoded = jwtDecode<CustomJwtPayload>(token);
+        const data = await axios.get("http://localhost:3000/payments/keys", {
+          headers: {
+            auth: token
+          }
+        });
+        setKeys(data.data[0].publicKeys)
+        console.log(keys);
+      } catch (e) {
+        console.log(e);
+      }
+    }
   };
 
   const handleLogout = () => {
@@ -148,7 +170,21 @@ const Profile = () => {
               <Wallet className="w-6 h-6 text-purple-500" />
             </div>
             <div className="text-3xl font-bold text-white mb-2">{profile?.balance}</div>
-            <p className="text-slate-400 text-sm">{profile?.walletAddress}</p>
+            <div className="flex items-center justify-between">
+              <p className="text-slate-400 text-sm font-mono break-all">{keys}</p>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(keys || '');
+                  // You might want to add a toast notification here
+                }}
+                className="ml-2 p-2 text-slate-400 hover:text-white transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                  <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6">
