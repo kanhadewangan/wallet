@@ -306,7 +306,7 @@ const Profile = () => {
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-slate-400 text-sm">Amount</p>
-                        <p className="text-white">{} SOL</p>
+                        <p className="text-white">{item?.amount || "N/A"} SOL</p>
                       </div>
                       <div>
                         <p className="text-slate-400 text-sm">Date</p>
