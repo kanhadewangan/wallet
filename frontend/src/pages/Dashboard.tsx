@@ -171,7 +171,7 @@ const Dashboard = () => {
       }
     });
 
-    const res = await axios.get
+    // const res = await axios.get
     setKeys(response.data);
     setLoading(false);
   };

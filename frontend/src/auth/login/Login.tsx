@@ -49,6 +49,7 @@ const Login = () => {
       const response = await axios.post('http://localhost:3000/user/login', formData);
       if (formData.rememberMe) {
         localStorage.setItem('token', response.data.token);
+        console.log(response);
       } else {
         sessionStorage.setItem('token', response.data.token);
       }

@@ -118,14 +118,14 @@ payment.post("/balance", async (req, res) => {
 
 payment.post("/p2p", async (req, res) => {
     const auth = req.headers["auth"];
-    if(!auth){
+    if (!auth) {
         res.json({
-            "message":"Not authorize",
-            "status":411
+            "message": "Not authorize",
+            "status": 411
         })
     }
-    const token = jwt.verify(auth,JWT_SECRTE);
-        console.log(token)
+    const token = jwt.verify(auth, JWT_SECRTE);
+    console.log(token)
     const { fromKey, toKey, amount } = req.body;
 
     if (!fromKey || !toKey || !amount) {
@@ -167,7 +167,6 @@ payment.post("/p2p", async (req, res) => {
 
         const signature = await connection.sendTransaction(tx, [keypair]);
         await connection.confirmTransaction(signature);
-
         const data = await prisma.payment.create({
             data: {
                 toKey: toKey,
@@ -190,25 +189,35 @@ payment.post("/p2p", async (req, res) => {
     }
 })
 
-payment.get("/keys",async(req,res)=>{
-    const token = req.headers["auth"]
-    if(!token){
-        res.json({
-            "message":"Authorzation Failed",
-        }).status(411)
-    }
-    const decode = jwt.verify(token,JWT_SECRTE);
-    const keys = await prisma.keys.findMany({
-        where:{
-            userId:decode.users.id
-        },
-        select:{
-            publicKeys:true
+payment.get("/keys", async (req, res) => {
+    try {
+        const token = req.headers["auth"];
+        if (!token) {
+            return res.status(401).json({
+                message: "Authorization Failed",
+                status: 401
+            });
         }
-    })
 
-    res.send(keys);
-})
+        const decode = jwt.verify(token, JWT_SECRTE) as { id: string };
+        const keys = await prisma.keys.findMany({
+            where: {
+                userId: decode.id
+            },
+            select: {
+                publicKeys: true
+            }
+        });
+
+        res.json(keys);
+    } catch (error) {
+        console.error("Error fetching keys:", error);
+        res.status(500).json({
+            message: "Internal server error",
+            error: error instanceof Error ? error.message : "Unknown error"
+        });
+    }
+});
 
 payment.get("/history", async (req, res) => {
     try {
@@ -219,10 +228,9 @@ payment.get("/history", async (req, res) => {
         }
 
         const decode = jwt.verify(token, JWT_SECRTE) as { id: string };
-        console.log(decode.users.id);
         const history = await prisma.payment.findFirst({
             where: {
-                userId: decode.users.id,
+                userId: decode.id,
             },
             select: {
                 fromKey: true,
@@ -236,7 +244,6 @@ payment.get("/history", async (req, res) => {
             }
         });
 
-        // Send a single response
         if (!history) {
             return res.json({ message: "No activity found" });
         }
@@ -244,9 +251,9 @@ payment.get("/history", async (req, res) => {
         return res.json(history);
     } catch (error) {
         console.error("Error in history endpoint:", error);
-        return res.status(500).json({ 
-            message: "Internal server error", 
-            error: error instanceof Error ? error.message : "Unknown error" 
+        return res.status(500).json({
+            message: "Internal server error",
+            error: error instanceof Error ? error.message : "Unknown error"
         });
     }
 });

@@ -39,24 +39,21 @@ route.post("/signup", async (req, res) => {
     }
 })
 
-route.get("/login", async (req, res) => {
+route.post("/login", async (req, res) => {
     try {
-        const token = req.headers["auth"];
-        if (!token) {
-            return res.status(401).send("invaild Token")
-        }
-        const decode = jwt.verify(token, JWT_SECRTE) as JwtPayload;
+        const {email,password} = req.body;
+
         const users = await prisma.user.findFirst({
             where: {
-                id: decode.id
+                email:email
             },
-            select:{
-                username:true,
-                id:true
-            }
         })
+        if(!users){
+            res.send("No user Found")
+        }
+        const token = jwt.sign(users?.id,JWT_SECRTE)
         res.send({
-            users
+            token
         })
     }
     catch (e) {

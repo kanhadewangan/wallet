@@ -44,11 +44,11 @@ const Profile = () => {
       try {
         const decoded = jwtDecode<CustomJwtPayload>(token);
         setIsAuthenticated(true);
-        setProfile({
-          name: decoded.users.username as string || 'User',
-          email: decoded.users.email as string || 'user@example.com',
-          joinDate: '2024-01-01',
-        });
+        // setProfile({
+        //   name: decoded.users.username as string || 'User',
+        //   email: decoded.users.email as string || 'user@example.com',
+        //   joinDate: '2024-01-01',
+        // });
       } catch (err) {
         console.error('Token verification failed:', err);
         setError('Invalid token');
@@ -174,9 +174,8 @@ const Profile = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  {profile?.name}
+                  {keys}
                 </h1>
-                <p className="text-slate-400">{profile?.email}</p>
               </div>
             </div>
             <button
@@ -196,7 +195,7 @@ const Profile = () => {
               <h2 className="text-xl font-semibold text-white">Wallet Balance</h2>
               <Wallet className="w-6 h-6 text-purple-500" />
             </div>
-            <div className="text-3xl font-bold text-white mb-2">{balance}</div>
+            <div className="text-3xl font-bold text-white mb-2">{balance?"loading...":balance}</div>
             <button 
               onClick={handleBalance}
               className='h-10 w-40 bg-violet-700 rounded-2xl'
@@ -208,7 +207,6 @@ const Profile = () => {
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(keys || '');
-                  // You might want to add a toast notification here
                 }}
                 className="ml-2 p-2 text-slate-400 hover:text-white transition-colors"
               >
