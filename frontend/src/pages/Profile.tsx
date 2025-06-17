@@ -44,11 +44,11 @@ const Profile = () => {
       try {
         const decoded = jwtDecode<CustomJwtPayload>(token);
         setIsAuthenticated(true);
-        setProfile({
-          name: decoded.users.username as string || 'User',
-          email: decoded.users.email as string || 'user@example.com',
-          joinDate: '2024-01-01',
-        });
+        // setProfile({
+        //   name: decoded.users.username as string || 'User',
+        //   email: decoded.users.email as string || 'user@example.com',
+        //   joinDate: '2024-01-01',
+        // });
       } catch (err) {
         console.error('Token verification failed:', err);
         setError('Invalid token');
@@ -75,18 +75,24 @@ const Profile = () => {
     }
   };
   const handleBalance = async () => {
-    const token = localStorage.getItem("token")
-    const balance = await axios.post("http://localhost:3000/payments/balance", {
-      publicKey: "7a1BCSDbqcSZr8TQ18E1EidCLnNt9Rt4fH1bunbAtHpQ"
-    }, {
-      headers: {
-        auth: token
-      }
-
-    })
-
-    setBalance(balance.data.balance);
-  }
+    if (!keys) return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    
+    try {
+      const balance = await axios.post("http://localhost:3000/payments/balance", {
+        publicKey: keys
+      }, {
+        headers: {
+          auth: token
+        }
+      });
+      setBalance(balance.data.balance);
+    } catch (error) {
+      console.error("Error fetching balance:", error);
+      setBalance("Error fetching balance");
+    }
+  };
   const handleActivity = async () => {
     const token = localStorage.getItem("token")
     if (!token) {
@@ -106,7 +112,7 @@ const Profile = () => {
       
       const activityData = Array.isArray(activity.data) ? activity.data : [activity.data];
       setActivity(activityData);
-      if (activityData.length === 0) {
+      if (activityData.length === 1) {
         setActivityError("No transactions found");
       }
     } catch (error) {
@@ -168,9 +174,8 @@ const Profile = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  {profile?.name}
+                  {keys}
                 </h1>
-                <p className="text-slate-400">{profile?.email}</p>
               </div>
             </div>
             <button
@@ -190,17 +195,18 @@ const Profile = () => {
               <h2 className="text-xl font-semibold text-white">Wallet Balance</h2>
               <Wallet className="w-6 h-6 text-purple-500" />
             </div>
-            <div className="text-3xl font-bold text-white mb-2">{balance}</div>
-            <button onClick={() => {
-              handleBalance
-              console.log(balance)
-            }} className=' h-10 w-40  bg-violet-700 rounded-2xl'>Check Balance</button>
+            <div className="text-3xl font-bold text-white mb-2">{balance?"loading...":balance}</div>
+            <button 
+              onClick={handleBalance}
+              className='h-10 w-40 bg-violet-700 rounded-2xl'
+            >
+              Check Balance
+            </button>
             <div className="flex items-center justify-between">
               <p className="text-slate-400 text-sm font-mono break-all">{keys}</p>
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(keys || '');
-                  // You might want to add a toast notification here
                 }}
                 className="ml-2 p-2 text-slate-400 hover:text-white transition-colors"
               >
@@ -290,26 +296,26 @@ const Profile = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-slate-400 text-sm">From</p>
-                        <p className="text-white font-mono break-all">{item.fromKey}</p>
+                        <p className="text-white font-mono break-all">{item?.fromKey}</p>
                       </div>
                       <div>
                         <p className="text-slate-400 text-sm">To</p>
-                        <p className="text-white font-mono break-all">{item.toKey}</p>
+                        <p className="text-white font-mono break-all">{}</p>
                       </div>
                     </div>
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-slate-400 text-sm">Amount</p>
-                        <p className="text-white">{item.amount} SOL</p>
+                        <p className="text-white">{item?.amount || "N/A"} SOL</p>
                       </div>
                       <div>
                         <p className="text-slate-400 text-sm">Date</p>
-                        <p className="text-white">{new Date(item.timestamp).toLocaleString()}</p>
+                        {/* <p className="text-white">{new Date().toLocaleString()}</p> */}
                       </div>
                     </div>
                     <div className="mt-4">
                       <p className="text-slate-400 text-sm">Signature</p>
-                      <p className="text-white font-mono text-sm break-all">{item.signature}</p>
+                      {/* <p className="text-white font-mono text-sm break-all">{item.signature}</p> */}
                     </div>
                   </div>
                 ))}

@@ -1,16 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ArrowLeft, Check, Copy, Send, Wallet } from 'lucide-react';
 
 const Sends = () => {
   const navigate = useNavigate();
+  const [publicKey, setPublicKey] = useState("")
   const [amount, setAmount] = useState('');
   const [fromKey, setFromKey] = useState('');
   const [toKey, setToKey] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +37,7 @@ const Sends = () => {
         }
       });
 
+
       setSuccess('Transaction successful!');
       // Clear form
       setAmount('');
@@ -47,6 +50,41 @@ const Sends = () => {
     }
   };
 
+  useEffect(() => {
+    fetchPublicKey();
+  }, []);
+
+  const fetchPublicKey = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      const response = await axios.get("http://localhost:3000/payments/keys", {
+        headers: {
+          auth: token
+        }
+      });
+
+      console.log('Public key response:', response.data);
+
+      if (response.data && response.data.length > 0) {
+        setPublicKey(response.data[0].publicKeys);
+        console.log('Public key set to:', response.data[0].publicKeys);
+      }
+    } catch (error) {
+      console.error('Error fetching public key:', error);
+    }
+  };
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(publicKey);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <div className="container mx-auto px-4 py-8">
@@ -57,7 +95,36 @@ const Sends = () => {
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back
         </button>
-
+        <div className='w-3xl  mx-auto p-5'>
+          <div className="bg-[#1C1D21] rounded-xl p-4 border border-[#2D2E32]">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2">
+                <Wallet className="w-5 h-5 text-[#14F195]" />
+                <span className="text-sm font-medium text-[#14F195]">Your Address:</span>
+              </div>
+              <button
+                onClick={copyToClipboard}
+                className="p-2 hover:bg-[#2D2E32] rounded-lg transition-colors"
+                title="Copy to clipboard"
+              >
+                {copied ? (
+                  <Check className="w-4 h-4 text-[#14F195]" />
+                ) : (
+                  <Copy className="w-4 h-4 text-[#14F195]" />
+                )}
+              </button>
+            </div>
+            <div className="bg-[#2D2E32] p-3 rounded-lg">
+              <p className="text-sm font-mono break-all text-white">
+                {publicKey ? (
+                  publicKey
+                ) : (
+                  <span className="text-gray-400">Loading address...</span>
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
         <div className="max-w-md mx-auto">
           <div className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6">
             <h1 className="text-2xl font-bold text-white mb-6">Send SOL</h1>

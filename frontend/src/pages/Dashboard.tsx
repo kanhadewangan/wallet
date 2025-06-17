@@ -29,8 +29,11 @@ import {
   DialogContent,
   DialogActions,
   ListItemIcon,
+  CardMedia,
+  Chip,
+  duration,
 } from '@mui/material';
-import { motion } from 'framer-motion';
+import { delay, motion } from 'framer-motion';
 import {
   AccountBalanceWallet,
   Send,
@@ -55,12 +58,15 @@ import {
   History,
   Lock,
   Shield,
+  Article,
+  Opacity,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { MenuIcon } from 'lucide-react';
 
 const MotionCard = motion(Card);
+const MotionButton = motion.button;
 
 // Create dark theme
 const darkTheme = createTheme({
@@ -93,6 +99,48 @@ const marketStats = [
   { label: 'Active Users', value: '125K', change: 8.7 },
 ];
 
+// Add this interface for news items
+interface NewsItem {
+  title: string;
+  description: string;
+  url: string;
+  imageUrl: string;
+  source: string;
+  publishedAt: string;
+  category: string;
+}
+
+// Add this mock data for news (you can replace with real API data later)
+const newsItems: NewsItem[] = [
+  {
+    title: "Solana's Network Activity Reaches New Heights",
+    description: "Solana's daily active addresses have surpassed 1 million, marking a significant milestone in network adoption.",
+    url: "#",
+    imageUrl: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?ixlib=rb-4.0.3",
+    source: "Crypto News",
+    publishedAt: "2024-03-15",
+    category: "Network"
+  },
+  {
+    title: "Major DeFi Protocol Launches on Solana",
+    description: "A new decentralized finance protocol has launched on Solana, promising lower fees and faster transactions.",
+    url: "#",
+    imageUrl: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?ixlib=rb-4.0.3",
+    source: "DeFi Times",
+    publishedAt: "2024-03-14",
+    category: "DeFi"
+  },
+  {
+    title: "Solana Price Analysis: Technical Indicators Show Bullish Signals",
+    description: "Technical analysis suggests potential upward movement in SOL price based on recent market patterns.",
+    url: "#",
+    imageUrl: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?ixlib=rb-4.0.3",
+    source: "Trading View",
+    publishedAt: "2024-03-13",
+    category: "Trading"
+  }
+];
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -123,7 +171,7 @@ const Dashboard = () => {
       }
     });
 
-    const res = await axios.get
+    // const res = await axios.get
     setKeys(response.data);
     setLoading(false);
   };
@@ -266,7 +314,7 @@ const Dashboard = () => {
                       }
                     }}
                   >
-                    <ContentCopy fontSize="small" />
+                    <ContentCopy fontSize="medium" />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -280,6 +328,7 @@ const Dashboard = () => {
                   }
                 }}
               >
+               
                 <Notifications />
               </IconButton>
               <IconButton
@@ -296,10 +345,53 @@ const Dashboard = () => {
                 <AccountCircle />
               </IconButton>
             </Box>
-          </Toolbar>
+            <MotionButton
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ 
+                scale: 1.05,
+                backgroundColor: '#4F46E5', // indigo-600
+                boxShadow: '0 0 20px rgba(79, 70, 229, 0.3)'
+              }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ 
+                duration: 0.3,
+                ease: "easeInOut"
+              }}
+              onClick={handleLogout}
+              className="
+                relative
+                px-6 
+                py-2.5
+                text-white
+                font-medium
+                text-sm
+                bg-gradient-to-r from-blue-500 to-indigo-600
+                rounded-full
+                overflow-hidden
+                group
+                transition-all
+                duration-300
+                ease-in-out
+                hover:shadow-lg
+                hover:shadow-indigo-500/30
+                focus:outline-none
+                focus:ring-2
+                focus:ring-indigo-500
+                focus:ring-offset-2
+                focus:ring-offset-gray-900
+              "
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                <Logout className="w-4 h-4" />
+                Logout
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </MotionButton>
+          </Toolbar>  
         </AppBar>
-
-        <Snackbar
+       <Snackbar
           open={snackbarOpen}
           autoHideDuration={3000}
           onClose={handleCloseSnackbar}
@@ -745,9 +837,101 @@ const Dashboard = () => {
                 </Grid>
               </Grid>
             </Grid>
-          </Grid>
-        </Container>
 
+            {/* News Section */}
+            <Grid item xs={12} md={6}>
+              <MotionCard
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                sx={{
+                  borderRadius: 4,
+                  bgcolor: 'background.paper',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+              >
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                    <Article sx={{ mr: 1, color: 'primary.main' }} />
+                    <Typography variant="h6" component="h2">
+                      Latest News
+                    </Typography>
+                  </Box>
+                  
+                  <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+                    {newsItems.map((news, index) => (
+                      <ListItem
+                        key={index}
+                        alignItems="flex-start"
+                        sx={{
+                          mb: 2,
+                          bgcolor: 'rgba(255,255,255,0.05)',
+                          borderRadius: 2,
+                          '&:hover': {
+                            bgcolor: 'rgba(255,255,255,0.08)',
+                            cursor: 'pointer'
+                          }
+                        }}
+                      >
+                        <CardMedia
+                          component="img"
+                          sx={{
+                            width: 100,
+                            height: 60,
+                            borderRadius: 1,
+                            mr: 2
+                          }}
+                          image={news.imageUrl}
+                          alt={news.title}
+                        />
+                        <Box sx={{ flex: 1 }}>
+                          <Typography
+                            variant="subtitle1"
+                            sx={{
+                              fontWeight: 'bold',
+                              mb: 0.5,
+                              color: 'text.primary'
+                            }}
+                          >
+                            {news.title}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{
+                              mb: 1,
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            {news.description}
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Chip
+                              size="small"
+                              label={news.category}
+                              sx={{
+                                bgcolor: 'primary.main',
+                                color: 'white',
+                                '&:hover': {
+                                  bgcolor: 'primary.dark'
+                                }
+                              }}
+                            />
+                            <Typography variant="caption" color="text.secondary">
+                              {news.source} • {new Date(news.publishedAt).toLocaleDateString()}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </ListItem>
+                    ))}
+                  </List>
+                </CardContent>
+              </MotionCard>
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
@@ -899,7 +1083,10 @@ const Dashboard = () => {
             </Button>
           </DialogActions>
         </Dialog>
-      </Box>
+      </Grid>
+    </Grid>
+    </Container>
+    </Box>
     </ThemeProvider>
   );
 };

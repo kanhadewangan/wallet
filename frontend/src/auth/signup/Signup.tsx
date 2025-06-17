@@ -11,9 +11,11 @@ import {
   Link,
   InputAdornment,
   IconButton,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Visibility, VisibilityOff, Person, Email, Lock } from '@mui/icons-material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,21 +27,27 @@ const SignUp = () => {
     username: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    agreeToTerms: false
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: value
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.agreeToTerms) {
+      setError('Please agree to the Terms of Service and Privacy Policy');
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -55,7 +63,7 @@ const SignUp = () => {
       });
 
       if (response.data) {
-        localStorage.setItem("token",response.data);
+        localStorage.setItem("token", response.data);
         navigate('/dashboard');
       }
     } catch (err) {
@@ -72,7 +80,22 @@ const SignUp = () => {
         display: 'flex',
         alignItems: 'center',
         background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-        py: 4
+        py: 4,
+        position: 'relative',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          width: '200%',
+          height: '200%',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%)',
+          animation: 'pulse 8s infinite',
+          '@keyframes pulse': {
+            '0%': { transform: 'scale(1)' },
+            '50%': { transform: 'scale(1.2)' },
+            '100%': { transform: 'scale(1)' }
+          }
+        }
       }}
     >
       <Container maxWidth="sm">
@@ -80,23 +103,29 @@ const SignUp = () => {
           elevation={6}
           sx={{
             p: 4,
-            borderRadius: 2,
+            borderRadius: 4,
             background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
           }}
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
           <Typography
-            variant="h4"
+            variant="h3"
             component="h1"
             gutterBottom
             align="center"
             sx={{
-              fontWeight: 600,
-              color: '#1976d2',
-              mb: 4
+              fontWeight: 800,
+              background: 'linear-gradient(45deg, #2196F3, #21CBF3)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              color: 'transparent',
+              mb: 4,
+              fontFamily: '"Poppins", sans-serif'
             }}
           >
             Create Account
@@ -111,12 +140,19 @@ const SignUp = () => {
               <TextField
                 fullWidth
                 label="Name"
-                name="name"
+                name="username"
                 variant="outlined"
-                value={formData.name}
+                value={formData.username}
                 onChange={handleChange}
                 sx={{ mb: 2 }}
                 required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Person sx={{ color: '#2196F3' }} />
+                    </InputAdornment>
+                  ),
+                }}
               />
             </motion.div>
 
@@ -135,6 +171,13 @@ const SignUp = () => {
                 onChange={handleChange}
                 sx={{ mb: 2 }}
                 required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email sx={{ color: '#2196F3' }} />
+                    </InputAdornment>
+                  ),
+                }}
               />
             </motion.div>
 
@@ -154,6 +197,11 @@ const SignUp = () => {
                 sx={{ mb: 2 }}
                 required
                 InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock sx={{ color: '#2196F3' }} />
+                    </InputAdornment>
+                  ),
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
@@ -181,8 +229,43 @@ const SignUp = () => {
                 variant="outlined"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                sx={{ mb: 3 }}
+                sx={{ mb: 2 }}
                 required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock sx={{ color: '#2196F3' }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    name="agreeToTerms"
+                    checked={formData.agreeToTerms}
+                    onChange={handleChange}
+                    sx={{
+                      color: '#2196F3',
+                      '&.Mui-checked': {
+                        color: '#21CBF3',
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <Typography variant="body2" color="text.secondary">
+                    I agree to the Terms of Service and Privacy Policy
+                  </Typography>
+                }
+                sx={{ mb: 2 }}
               />
             </motion.div>
 
@@ -193,20 +276,23 @@ const SignUp = () => {
               <Button
                 fullWidth
                 variant="contained"
-                color="primary"
                 type="submit"
                 disabled={loading}
                 sx={{
-                  mb: 2,
+                  mb: 3,
                   py: 1.5,
                   fontSize: '1.1rem',
                   textTransform: 'none',
-                  borderRadius: 2,
+                  borderRadius: 3,
                   background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
-                  boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)'
+                  boxShadow: '0 4px 15px rgba(33, 150, 243, 0.3)',
+                  '&:hover': {
+                    background: 'linear-gradient(45deg, #1976D2 30%, #1E88E5 90%)',
+                    boxShadow: '0 6px 20px rgba(33, 150, 243, 0.4)'
+                  }
                 }}
               >
-                {loading ? <CircularProgress size={24} /> : 'Sign Up'}
+                {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign Up'}
               </Button>
             </motion.div>
           </form>
@@ -219,8 +305,11 @@ const SignUp = () => {
               <Alert
                 severity="error"
                 sx={{
-                  mt: 2,
-                  borderRadius: 2
+                  mb: 3,
+                  borderRadius: 2,
+                  background: 'rgba(33, 150, 243, 0.1)',
+                  color: '#2196F3',
+                  border: '1px solid rgba(33, 150, 243, 0.2)'
                 }}
               >
                 {error}
@@ -231,13 +320,13 @@ const SignUp = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.7 }}
           >
             <Typography
               align="center"
               sx={{
-                mt: 3,
-                color: '#666'
+                color: '#666',
+                fontSize: '0.95rem'
               }}
             >
               Already have an account?{' '}
@@ -249,7 +338,7 @@ const SignUp = () => {
                   fontWeight: 600,
                   '&:hover': {
                     textDecoration: 'underline',
-                    color: '#1976d2'
+                    color: '#1976D2'
                   }
                 }}
               >

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -7,8 +7,10 @@ import {
   QrCode,
   Copy,
   Check,
-  AlertCircle
+  AlertCircle,
+  Wallet
 } from 'lucide-react';
+import axios from 'axios';
 
 const SendToken = () => {
   const navigate = useNavigate();
@@ -18,6 +20,43 @@ const SendToken = () => {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [publicKey, setPublicKey] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    fetchPublicKey();
+  }, []);
+
+  const fetchPublicKey = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      const response = await axios.get("http://localhost:3000/payments/keys", {
+        headers: {
+          auth: token
+        }
+      });
+      
+      console.log('Public key response:', response.data);
+      
+      if (response.data && response.data.length > 0) {
+        setPublicKey(response.data[0].publicKeys);
+        console.log('Public key set to:', response.data[0].publicKeys);
+      }
+    } catch (error) {
+      console.error('Error fetching public key:', error);
+    }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(publicKey);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,17 +77,51 @@ const SendToken = () => {
   return (
     <div className="min-h-screen bg-[#0A0B0D] text-white">
       <div className="max-w-2xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center mb-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 hover:bg-[#1C1D21] rounded-full transition-colors"
-          >
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          <h1 className="text-2xl font-bold ml-4 bg-gradient-to-r from-[#9945FF] to-[#14F195] bg-clip-text text-transparent">
-            Send SOL
-          </h1>
+        {/* Header with Public Key */}
+        <div className="flex flex-col space-y-4 mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <button
+                onClick={() => navigate(-1)}
+                className="p-2 hover:bg-[#1C1D21] rounded-full transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6" />
+              </button>
+              <h1 className="text-2xl font-bold ml-4 bg-gradient-to-r from-[#9945FF] to-[#14F195] bg-clip-text text-transparent">
+                Send SOL
+              </h1>
+            </div>
+          </div>
+          
+          {/* Public Key Display - Updated styling */}
+          <div className="bg-[#1C1D21] rounded-xl p-4 border border-[#2D2E32]">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2">
+                <Wallet className="w-5 h-5 text-[#14F195]" />
+                <span className="text-sm font-medium text-[#14F195]">Your Address:</span>
+              </div>
+              <button
+                onClick={copyToClipboard}
+                className="p-2 hover:bg-[#2D2E32] rounded-lg transition-colors"
+                title="Copy to clipboard"
+              >
+                {copied ? (
+                  <Check className="w-4 h-4 text-[#14F195]" />
+                ) : (
+                  <Copy className="w-4 h-4 text-[#14F195]" />
+                )}
+              </button>
+            </div>
+            <div className="bg-[#2D2E32] p-3 rounded-lg">
+              <p className="text-sm font-mono break-all text-white">
+                {publicKey ? (
+                  publicKey
+                ) : (
+                  <span className="text-gray-400">Loading address...</span>
+                )}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Main Content */}
