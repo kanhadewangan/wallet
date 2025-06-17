@@ -1,104 +1,94 @@
 # 🦄 GenNZ Wallet
 
-![wallet-banner](https://media.giphy.com/media/3o7abB06u9bNzA8lu8/giphy.gif)
+A modern, secure, and user-friendly Solana wallet application built with React and TypeScript.
 
-Welcome to **GenNZ Wallet** — your next-generation, ultra-stylish digital wallet.  
-Empowering Gen Z to take control of their finances, flex their style, and manage their money with a vibe that matches YOU. 🚀✨
+![GenNZ Wallet](https://i.imgur.com/your-screenshot.png)
 
----
+## ✨ Features
 
-## 💎 Features
+- 🔐 Secure wallet management
+- 💸 Send and receive SOL
+- 📱 Responsive design
+- 🌙 Dark theme
+- 📊 Real-time market data
+- 🔄 Transaction history
+- 🔒 Security features
+- 🎨 Modern UI/UX
 
-- **Solana Integration** 🌟: Fast and secure blockchain transactions
-- **P2P Transfers** ⚡️: Send money instantly to anyone
-- **Wallet Generation** 🔑: Create your own Solana wallet
-- **Balance Tracking** 📊: Monitor your SOL balance in real-time
-- **Secure Authentication** 🔒: JWT-based secure authentication
-- **User Profiles** 👤: Personalized wallet experience
+## 🚀 Quick Start
 
----
+### Prerequisites
 
-## 🛠️ Tech Stack
+- Node.js (v14 or higher)
+- npm or yarn
+- Solana CLI tools
 
-- **Backend**: Node.js, Express, TypeScript
-- **Database**: PostgreSQL with Prisma ORM
-- **Blockchain**: Solana Web3.js
-- **Authentication**: JWT
-- **API**: RESTful Architecture
+### Installation
 
----
-
-## 🚀 Quickstart
-
+1. Clone the repository
 ```bash
-# Clone the repository
-git clone https://github.com/kanhadewangan/wallet.git
-cd wallet
+git clone https://github.com/yourusername/gennz-wallet.git
+cd gennz-wallet
+```
 
-# Install dependencies
+2. Install dependencies
+```bash
 npm install
+```
 
-# Set up environment variables
+3. Set up environment variables
+```bash
 cp .env.example .env
-# Edit .env with your configuration
+```
 
-# Run the development server
+4. Start the development server
+```bash
 npm run dev
 ```
 
----
+## 🛠 Tech Stack
 
-## 🎮 API Endpoints
+- **Frontend**
+  - React.js
+  - TypeScript
+  - Material-UI
+  - Framer Motion
+  - Axios
 
-### Authentication
-- `POST /signup` - Create a new account
-- `GET /login` - Login to your account
+- **Backend**
+  - Node.js
+  - Express
+  - MongoDB
+  - JWT Authentication
 
-### Wallet
-- `GET /generate` - Generate a new Solana wallet
-- `POST /balance` - Check wallet balance
-- `POST /p2p` - Send SOL to another wallet
+## 📚 Documentation
 
----
+For detailed documentation, visit our [docs](https://docs.gennz-wallet.com).
 
-## 🎨 Stickers & Swag
+## 🤝 Contributing
 
-<div align="center">
-  <img src="https://media.giphy.com/media/3o7abB06u9bNzA8lu8/giphy.gif" width="100" />
-  <img src="https://media.giphy.com/media/l0MYEqEzwMWFCg8rm/giphy.gif" width="100" />
-  <img src="https://media.giphy.com/media/xT1XGNBg2QhzeQW2E0/giphy.gif" width="100" />
-  <img src="https://media.giphy.com/media/QMkPpxPDYY0fu/giphy.gif" width="100" />
-</div>
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
----
+## 📄 License
 
-## 💬 Join the Community
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-- [Discord](https://discord.gg/yourinvite)  
-- [Instagram](https://instagram.com/yourwalletapp)
-- [Twitter](https://twitter.com/yourwalletapp)
+## 🔗 Links
 
-Let's vibe together! Drop your feedback, memes, or feature requests.
+- [Documentation](https://docs.gennz-wallet.com)
+- [API Reference](https://api.gennz-wallet.com)
+- [Community Forum](https://community.gennz-wallet.com)
 
----
+## 🙏 Acknowledgments
 
-## 👾 Contributing
+- Solana Foundation
+- Material-UI Team
+- All our contributors
 
-1. Fork this repo
-2. Create your feature branch (`git checkout -b feature/your-cool-feature`)
-3. Commit your changes
-4. Push to the branch (`git push origin feature/your-cool-feature`)
-5. Open a Pull Request
+## 📞 Support
 
----
-
-## 🪩 License
-
-MIT License | © kanhadewangan
+For support, please open an issue in the GitHub repository or contact our support team.
 
 ---
 
-<p align="center">
-  <img src="https://media.giphy.com/media/QMkPpxPDYY0fu/giphy.gif" width="150" /><br>
-  <b>GenNZ Wallet — Where your money matches your vibe.</b>
-</p>
+Made with ❤️ by the GenNZ Wallet Team

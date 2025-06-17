@@ -189,7 +189,6 @@ const GenerateKeys = () => {
                 }}
                 sx={{ mb: 3 }}
               />
-              
               <Alert severity="info" sx={{ mt: 2 }}>
                 Keep your private key secure and never share it with anyone. The private key is stored securely on our servers.
               </Alert>

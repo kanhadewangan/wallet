@@ -12,6 +12,8 @@ import {
   InputAdornment,
   IconButton,
   Divider,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { Visibility, VisibilityOff, Email, Lock } from '@mui/icons-material';
@@ -24,16 +26,18 @@ const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
+    rememberMe: false
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: value
     });
   };
 
@@ -43,7 +47,11 @@ const Login = () => {
       setLoading(true);
       setError(null);
       const response = await axios.post('http://localhost:3000/user/login', formData);
-      localStorage.setItem('token', response.data.token);
+      if (formData.rememberMe) {
+        localStorage.setItem('token', response.data.token);
+      } else {
+        sessionStorage.setItem('token', response.data.token);
+      }
       navigate('/dashboard');
     } catch (err) {
       setError('Invalid email or password');
@@ -149,7 +157,7 @@ const Login = () => {
                 variant="outlined"
                 value={formData.password}
                 onChange={handleChange}
-                sx={{ mb: 3 }}
+                sx={{ mb: 2 }}
                 required
                 InputProps={{
                   startAdornment: (
@@ -172,6 +180,34 @@ const Login = () => {
             </motion.div>
 
             <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    name="rememberMe"
+                    checked={formData.rememberMe}
+                    onChange={handleChange}
+                    sx={{
+                      color: '#FF6B6B',
+                      '&.Mui-checked': {
+                        color: '#4ECDC4',
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <Typography variant="body2" color="text.secondary">
+                    Remember me
+                  </Typography>
+                }
+                sx={{ mb: 2 }}
+              />
+            </motion.div>
+
+            <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -180,9 +216,6 @@ const Login = () => {
                 variant="contained"
                 type="submit"
                 disabled={loading}
-                onClick={()=>{
-                  navigate("/dashboard")
-                }}
                 sx={{
                   mb: 3,
                   py: 1.5,
@@ -249,7 +282,7 @@ const Login = () => {
                   }
                 }}
               >
-                Sign Up
+                Sign up
               </Link>
             </Typography>
           </motion.div>

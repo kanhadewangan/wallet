@@ -219,11 +219,11 @@ payment.get("/history", async (req, res) => {
         }
 
         const decode = jwt.verify(token, JWT_SECRTE) as { id: string };
-        console.log(decode.users.id)
+        console.log(decode.users.id);
         const history = await prisma.payment.findFirst({
-        where:{
-            userId:decode.users.id,
-        },
+            where: {
+                userId: decode.users.id,
+            },
             select: {
                 fromKey: true,
                 toKey: true,
@@ -236,11 +236,18 @@ payment.get("/history", async (req, res) => {
             }
         });
 
-        console.log( "History:", history);
-        res.json(history);
+        // Send a single response
+        if (!history) {
+            return res.json({ message: "No activity found" });
+        }
+
+        return res.json(history);
     } catch (error) {
         console.error("Error in history endpoint:", error);
-        res.status(500).json({ message: "Internal server error", error: error instanceof Error ? error.message : "Unknown error" });
+        return res.status(500).json({ 
+            message: "Internal server error", 
+            error: error instanceof Error ? error.message : "Unknown error" 
+        });
     }
 });
 
