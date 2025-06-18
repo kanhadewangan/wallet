@@ -7,7 +7,8 @@ import crypto from "crypto";
 import cookieParser from "cookie-parser";
 const route = express.Router();
 import { auth, type AuthRequest } from "./middle";
-const prisma = new PrismaClient()
+import { withAccelerate } from "@prisma/extension-accelerate";
+const prisma = new PrismaClient().$extends(withAccelerate())
 
 route.use(cookieParser());
  

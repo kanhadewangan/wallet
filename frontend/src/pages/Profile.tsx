@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from 'react-router-dom';
 import { Shield, User, LogOut, Wallet, Activity, ArrowRight } from 'lucide-react';
@@ -33,10 +33,30 @@ const Profile = () => {
   useEffect(() => {
     checkAuth();
     handleKeys();
-    handleBalance();
     handleActivity();
   }, []);
 
+  useEffect(() => {
+    const fetchBalance = async () => {
+      if (!keys) return;
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const balance = await axios.post("http://localhost:3000/payments/balance", {
+          publicKey: keys
+        }, {
+          headers: {
+            auth: token
+          }
+        });
+        setBalance(balance.data.balance);
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+        setBalance("Error fetching balance");
+      }
+    };
+    fetchBalance();
+  }, [keys]);
 
   const checkAuth = () => {
     const token = localStorage.getItem('token');
@@ -74,25 +94,7 @@ const Profile = () => {
       }
     }
   };
-  const handleBalance = async () => {
-    if (!keys) return;
-    const token = localStorage.getItem("token");
-    if (!token) return;
-    
-    try {
-      const balance = await axios.post("http://localhost:3000/payments/balance", {
-        publicKey: keys
-      }, {
-        headers: {
-          auth: token
-        }
-      });
-      setBalance(balance.data.balance);
-    } catch (error) {
-      console.error("Error fetching balance:", error);
-      setBalance("Error fetching balance");
-    }
-  };
+ 
   const handleActivity = async () => {
     const token = localStorage.getItem("token")
     if (!token) {
@@ -109,10 +111,11 @@ const Profile = () => {
           auth: token,
         }
       })
-      
+
+      console.log("Activity data received:", activity.data);
       const activityData = Array.isArray(activity.data) ? activity.data : [activity.data];
       setActivity(activityData);
-      if (activityData.length === 1) {
+      if (activityData.length === 0) {
         setActivityError("No transactions found");
       }
     } catch (error) {
@@ -195,14 +198,34 @@ const Profile = () => {
               <h2 className="text-xl font-semibold text-white">Wallet Balance</h2>
               <Wallet className="w-6 h-6 text-purple-500" />
             </div>
-            <div className="text-3xl font-bold text-white mb-2">{balance?"loading...":balance}</div>
-            <button 
-              onClick={handleBalance}
+            <div className="text-3xl font-bold text-white mb-2 p-4">{balance ? `${balance}  SOL` : "Loading..."}</div>
+            <button
+              onClick={() => {
+                const fetchBalance = async () => {
+                  if (!keys) return;
+                  const token = localStorage.getItem("token");
+                  if (!token) return;
+                  try {
+                    const balance = await axios.post("http://localhost:3000/payments/balance", {
+                      publicKey: keys
+                    }, {
+                      headers: {
+                        auth: token
+                      }
+                    });
+                    setBalance(balance.data.balance);
+                  } catch (error) {
+                    console.error("Error fetching balance:", error);
+                    setBalance("Error fetching balance");
+                  }
+                };
+                fetchBalance();
+              }}
               className='h-10 w-40 bg-violet-700 rounded-2xl'
             >
               Check Balance
             </button>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-4">
               <p className="text-slate-400 text-sm font-mono break-all">{keys}</p>
               <button
                 onClick={() => {
@@ -238,7 +261,7 @@ const Profile = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <button 
+          <button
             onClick={() => navigate('/send')}
             className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6 hover:bg-slate-800/70 transition-colors"
           >
@@ -249,7 +272,7 @@ const Profile = () => {
             <p className="text-slate-400 text-sm">Transfer funds to another wallet</p>
           </button>
 
-          <button 
+          <button
             onClick={() => navigate('/receive')}
             className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6 hover:bg-slate-800/70 transition-colors"
           >
@@ -260,7 +283,7 @@ const Profile = () => {
             <p className="text-slate-400 text-sm">Get your wallet address</p>
           </button>
 
-          <button 
+          <button
             onClick={() => navigate('/dashboard')}
             className="bg-slate-800/50 border border-slate-700 rounded-lg backdrop-blur-sm p-6 hover:bg-slate-800/70 transition-colors"
           >
@@ -279,7 +302,7 @@ const Profile = () => {
               <h2 className="text-xl font-semibold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Transaction History</h2>
               <Activity className="w-6 h-6 text-purple-500" />
             </div>
-            
+
             {loadingActivity ? (
               <div className="flex justify-center py-8">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
@@ -289,8 +312,8 @@ const Profile = () => {
             ) : activity && activity.length > 0 ? (
               <div className="space-y-4">
                 {activity.map((item, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:bg-slate-700/50 transition-colors"
                   >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -300,22 +323,22 @@ const Profile = () => {
                       </div>
                       <div>
                         <p className="text-slate-400 text-sm">To</p>
-                        <p className="text-white font-mono break-all">{}</p>
+                        <p className="text-white font-mono break-all">{item?.toKey}</p>
                       </div>
                     </div>
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-slate-400 text-sm">Amount</p>
-                        <p className="text-white">{item?.amount || "N/A"} SOL</p>
+                        <p className="text-white">{item?.amount} SOL</p>
                       </div>
                       <div>
                         <p className="text-slate-400 text-sm">Date</p>
-                        {/* <p className="text-white">{new Date().toLocaleString()}</p> */}
+                        <p className="text-white">{item?.timestamp ? new Date(item.timestamp).toLocaleString() : 'N/A'}</p>
                       </div>
                     </div>
                     <div className="mt-4">
                       <p className="text-slate-400 text-sm">Signature</p>
-                      {/* <p className="text-white font-mono text-sm break-all">{item.signature}</p> */}
+                      <p className="text-white font-mono text-sm break-all">{item?.signature || 'N/A'}</p>
                     </div>
                   </div>
                 ))}

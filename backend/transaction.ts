@@ -5,7 +5,8 @@ import dotenv from "dotenv";
 import { JWT_SECRTE, SOLANA_VALIDATOR } from "./secrete";
 export const transaction = express.Router();
 import jwt from "jsonwebtoken"
-const prisma = new PrismaClient()
+import { withAccelerate } from "@prisma/extension-accelerate";
+const prisma = new PrismaClient().$extends(withAccelerate())
 dotenv.config();
 
 transaction.post("/airdrop", async (req, res) => {
