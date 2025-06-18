@@ -2,7 +2,7 @@
 
 A modern, secure, and user-friendly Solana wallet application built with React and TypeScript.
 
-![GenNZ Wallet](https://i.imgur.com/your-screenshot.png)
+![GenNZ Wallet](https://res.cloudinary.com/dufjleqeu/image/upload/v1750231517/ukdfkoce3r0ycbm3a7lj.jpg)
 
 ## ✨ Features
 
