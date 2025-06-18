@@ -1,15 +1,14 @@
-import { PrismaClient } from "@prisma/client";
+
+import { PrismaClient } from '@prisma/client/edge'
+import { withAccelerate } from '@prisma/extension-accelerate'
 import { clusterApiUrl, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import express, { Router } from "express"
 import type { Request, Response } from "express"
 import { auth, type AuthRequest } from "./middle";
 import jwt, { type JwtPayload } from "jsonwebtoken";
-import { json } from "stream/consumers";
 import { JWT_SECRTE } from "./secrete";
-import { equal } from "assert";
-
+const prisma = new PrismaClient().$extends(withAccelerate())
 const payment: Router = express.Router();
-const prisma = new PrismaClient()
 
 payment.use(async (req: AuthRequest, res: Response, next) => {
     if (req.path === "/") {

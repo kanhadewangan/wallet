@@ -27,8 +27,8 @@ A modern, secure, and user-friendly Solana wallet application built with React a
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/gennz-wallet.git
-cd gennz-wallet
+git clone https://github.com/kanhadewangan/wallet.git
+cd wallet
 ```
 
 2. Install dependencies
