@@ -60,6 +60,7 @@ import {
   Shield,
   Article,
   Opacity,
+  Key,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -342,7 +343,7 @@ const Dashboard = () => {
                   }
                 }}
               >
-                <AccountCircle />
+                <Key />
               </IconButton>
             </Box>
             <MotionButton
@@ -725,6 +726,7 @@ const Dashboard = () => {
                                 boxShadow: '0 4px 20px rgba(20, 241, 149, 0.1)'
                               }
                             }}
+                            onClick={()=>navigate("/history")}
                           >
                             History
                           </Button>

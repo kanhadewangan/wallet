@@ -10,6 +10,7 @@ import SendToken from './pages/SendToken';
 import Sends from './pages/Send';
 import Receive from './pages/Receive';
 import NotFound from './pages/NotFound';
+import History from './pages/History';
 
 const App = () => {
   return (
@@ -25,6 +26,7 @@ const App = () => {
         <Route path="/profile" element={<Profile/>}/>
         <Route path="/generate-keys" element={<GenerateKeys/>}/>
         <Route path='/*' element={<NotFound />}/>
+        <Route path='/history' element={<History/>}/>
       </Routes>
     </Router>
   )

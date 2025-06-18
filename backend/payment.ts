@@ -256,6 +256,44 @@ payment.get("/history", async (req, res) => {
         });
     }
 });
+payment.get("/history/all", async (req, res) => {
+    try {
+        const token = req.headers["auth"];
+        if (!token || typeof token !== 'string') {
+            console.log("No token provided");
+            return res.status(401).json({ message: "Auth Required" });
+        }
+
+        const decode = jwt.verify(token, JWT_SECRTE) as { id: string };
+        const history = await prisma.payment.findMany({
+            where: {
+                userId: decode.id
+            },
+            select: {
+                fromKey: true,
+                toKey: true,
+                amount: true,
+                timestamp: true,
+                signature: true
+            },
+            orderBy: {
+                timestamp: 'desc'
+            }
+        });
+
+        if (!history) {
+            return res.json({ message: "No activity found" });
+        }
+
+        return res.json(history);
+    } catch (error) {
+        console.error("Error in history endpoint:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            error: error instanceof Error ? error.message : "Unknown error"
+        });
+    }
+});
 
 
 export default payment;

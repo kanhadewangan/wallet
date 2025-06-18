@@ -13,6 +13,12 @@ const Sends = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [transactionDetails, setTransactionDetails] = useState<{
+    signature?: string;
+    toAddress?: string;
+    amount?: number;
+  } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,8 +43,14 @@ const Sends = () => {
         }
       });
 
-
-      setSuccess('Transaction successful!');
+      // Store transaction details
+      setTransactionDetails({
+        signature: response.data.signature,
+        toAddress: toKey,
+        amount: parseFloat(amount)
+      });
+      setShowSuccess(true);
+      
       // Clear form
       setAmount('');
       setFromKey('');
@@ -202,6 +214,54 @@ const Sends = () => {
           </div>
         </div>
       </div>
+
+      {showSuccess && transactionDetails && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-slate-800/90 border border-slate-700 rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
+                <Check className="w-8 h-8 text-green-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-white">Transaction Successful!</h2>
+              
+              <div className="space-y-3 text-left">
+                <div className="bg-slate-700/50 p-3 rounded-lg">
+                  <p className="text-slate-400 text-sm">Amount</p>
+                  <p className="text-white font-mono">{transactionDetails.amount} SOL</p>
+                </div>
+                
+                <div className="bg-slate-700/50 p-3 rounded-lg">
+                  <p className="text-slate-400 text-sm">To Address</p>
+                  <p className="text-white font-mono break-all">{transactionDetails.toAddress}</p>
+                </div>
+                
+                <div className="bg-slate-700/50 p-3 rounded-lg">
+                  <p className="text-slate-400 text-sm">Transaction Signature</p>
+                  <p className="text-white font-mono text-sm break-all">{transactionDetails.signature}</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    setShowSuccess(false);
+                    navigate('/dashboard');
+                  }}
+                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg transition-colors"
+                >
+                  Back to Dashboard
+                </button>
+                <button
+                  onClick={() => setShowSuccess(false)}
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
