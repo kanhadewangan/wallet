@@ -91,4 +91,4 @@ For support, please open an issue in the GitHub repository or contact our suppor
 
 ---
 
-Made with ❤️ by the GenNZ Wallet Team
+Made with ❤️ by the GenNZ Wallet Team (Kanha & Gopal)
