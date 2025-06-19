@@ -1,59 +1,48 @@
-
 import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { clusterApiUrl, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import express, { Router } from "express"
-import type { Request, Response } from "express"
-import { auth, type AuthRequest } from "./middle";
+import type { Request, Response, NextFunction } from "express"
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { JWT_SECRTE } from "./secrete";
+import { authMiddleware } from './middleware';
 const prisma = new PrismaClient().$extends(withAccelerate())
 const payment: Router = express.Router();
+import type { AuthenticatedRequest } from './middleware';
 
-payment.use(async (req: AuthRequest, res: Response, next) => {
-    if (req.path === "/") {
-        return next();
+
+payment.use((req, res, next) => {
+    const header = req.headers["auth"];
+    if (!header || typeof header !== "string") {
+        return res.status(401).json({ message: "Authentication required" });
     }
+    const token = jwt.verify(header, JWT_SECRTE);
+    console.log();
+    (req as any).userId = Number(token.users.id)
+    console.log(req.userId)
+    next();
+})
 
-    try {
-        const token = req.headers["auth"];
-        if (!token || typeof token !== 'string') {
-            return res.status(401).json({ message: "Authentication required" });
-        }
+payment.get("/", async (req, res) => {
 
-        const decoded = jwt.verify(token, JWT_SECRTE) as { id: string };
-        req.userId = decoded.id;
-        next();
-    } catch (error) {
-        return res.status(401).json({ message: "Invalid token" });
-    }
-});
-
-payment.get("/", async (req: AuthRequest, res: Response) => {
-    const token = req.headers["auth"] as JwtPayload
-    const decode = jwt.verify(token, JWT_SECRTE)
-    const data = await prisma.payment.findMany({
+    const data = await prisma.payment.findFirst({
         where: {
-            userId: {
-                equals: decode.id
-            }
+            userId: Number(req.userId)
+
         }
     })
     res.send(data);
 })
 
-payment.post("/generate", async (req: AuthRequest, res: Response) => {
-
-    const auth = req.headers["auth"];
-    const token = jwt.verify(auth, JWT_SECRTE);
-    console.log(token.users.id);
+payment.get("/generate", async (req, res) => {
     const keypair = Keypair.generate();
-
+    console.log(req.userId);
     const data = await prisma.keys.create({
         data: {
             privateKeys: keypair.secretKey.toString(),
             publicKeys: keypair.publicKey.toBase58().toString(),
-            userId: token.users.id
+
+            userId: Number(req.userId)
         },
         select: {
             publicKeys: true
@@ -62,22 +51,10 @@ payment.post("/generate", async (req: AuthRequest, res: Response) => {
     res.send(data);
 })
 
-interface BalanceRequest {
-    publicKey: string;
-}
 
 payment.post("/balance", async (req, res) => {
     try {
-        const headers = req.headers["auth"]
-        if (!headers) {
-            res.json({
-                "message": "Not Authenticated",
-                "status": 401
-            })
-        }
         const { publicKey } = req.body;
-
-        // Enhanced validation
         if (!publicKey) {
             return res.status(400).json({ error: "Public key is required" });
         }
@@ -86,11 +63,9 @@ payment.post("/balance", async (req, res) => {
             return res.status(400).json({ error: "Public key must be a string" });
         }
 
-        // Validate public key format (base58 encoded, should be 32-44 characters)
         if (publicKey.length < 32 || publicKey.length > 44) {
             return res.status(400).json({ error: "Invalid public key format" });
         }
-        // Try to create PublicKey and catch any validation errors
         let keys;
         try {
             keys = new PublicKey(publicKey);
@@ -101,8 +76,6 @@ payment.post("/balance", async (req, res) => {
 
         const connection = new Connection(clusterApiUrl("devnet"));
         const balance = await connection.getBalance(keys);
-
-
 
         res.json({
             publicKey: publicKey,
@@ -116,15 +89,7 @@ payment.post("/balance", async (req, res) => {
 })
 
 payment.post("/p2p", async (req, res) => {
-    const auth = req.headers["auth"];
-    if (!auth) {
-        res.json({
-            "message": "Not authorize",
-            "status": 411
-        })
-    }
-    const token = jwt.verify(auth, JWT_SECRTE);
-    console.log(token)
+
     const { fromKey, toKey, amount } = req.body;
 
     if (!fromKey || !toKey || !amount) {
@@ -171,11 +136,11 @@ payment.post("/p2p", async (req, res) => {
                 toKey: toKey,
                 fromKey: fromKey,
                 amount: amount,
-                userId: 1,
+                userId: Number(req.userId),
                 signature: signature
             }
         });
-
+        console.log(data);
         res.json({
             "message": "Transaction Successful",
             "check on": "solana explorer",
@@ -190,18 +155,10 @@ payment.post("/p2p", async (req, res) => {
 
 payment.get("/keys", async (req, res) => {
     try {
-        const token = req.headers["auth"];
-        if (!token) {
-            return res.status(401).json({
-                message: "Authorization Failed",
-                status: 401
-            });
-        }
 
-        const decode = jwt.verify(token, JWT_SECRTE) as { id: string };
         const keys = await prisma.keys.findMany({
             where: {
-                userId: decode.id
+                userId: Number(req.userId)
             },
             select: {
                 publicKeys: true
@@ -220,16 +177,10 @@ payment.get("/keys", async (req, res) => {
 
 payment.get("/history", async (req, res) => {
     try {
-        const token = req.headers["auth"];
-        if (!token || typeof token !== 'string') {
-            console.log("No token provided");
-            return res.status(401).json({ message: "Auth Required" });
-        }
 
-        const decode = jwt.verify(token, JWT_SECRTE) as { id: string };
         const history = await prisma.payment.findFirst({
             where: {
-                userId: decode.id,
+                userId: Number(req.userId)
             },
             select: {
                 fromKey: true,
@@ -258,16 +209,10 @@ payment.get("/history", async (req, res) => {
 });
 payment.get("/history/all", async (req, res) => {
     try {
-        const token = req.headers["auth"];
-        if (!token || typeof token !== 'string') {
-            console.log("No token provided");
-            return res.status(401).json({ message: "Auth Required" });
-        }
 
-        const decode = jwt.verify(token, JWT_SECRTE) as { id: string };
         const history = await prisma.payment.findMany({
             where: {
-                userId: decode.id
+                userId: Number(req.userId)
             },
             select: {
                 fromKey: true,

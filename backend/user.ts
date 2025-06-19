@@ -6,11 +6,11 @@ import { JWT_SECRTE } from "./secrete";
 import crypto from "crypto";
 import cookieParser from "cookie-parser";
 const route = express.Router();
-import { auth, type AuthRequest } from "./middle";
 import { withAccelerate } from "@prisma/extension-accelerate";
 const prisma = new PrismaClient().$extends(withAccelerate())
 
 route.use(cookieParser());
+
  
 route.post("/signup", async (req, res) => {
     try {
@@ -63,7 +63,7 @@ route.post("/login", async (req, res) => {
     }
 })
 
-route.get("/profile", auth, async (req: AuthRequest, res: Response) => {
+route.get("/profile",  async (req: AuthRequest, res: Response) => {
     try {
         if (!req.userId) {
             return res.status(401).json({ error: "User not authenticated" });
