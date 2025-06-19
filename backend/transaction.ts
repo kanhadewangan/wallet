@@ -7,20 +7,32 @@ export const transaction = express.Router();
 import jwt from "jsonwebtoken"
 import { withAccelerate } from "@prisma/extension-accelerate";
 const prisma = new PrismaClient().$extends(withAccelerate())
-dotenv.config();
+
+transaction.use((req,res,next)=>{
+    const header = req.headers["auth"];
+    if(!header||typeof header!=="string"){
+        return res.status(401).json({ message: "Authentication required" });
+    }
+    const token = jwt.verify(header,JWT_SECRTE);
+    (req as any).userId = token.users.id;
+    next();
+})
+
+transaction.get("/",(req,res)=>{
+    res.send("hello");
+})
 
 transaction.post("/airdrop", async (req, res) => {
-    const auth = req.headers["auth"];
-    const decode = jwt.verify(auth,JWT_SECRTE)
+  
     const { pubkeys } = req.body;
-    const connection = new Connection(clusterApiUrl("devnet"));
+    const connection = new Connection("https://127.0.0.1:8899","confirmed");
     if (!connection) {
         res.send("Failed to connect devnets ");
     }
     try {
         const pubkey = await prisma.keys.findFirst({
             where: {
-                userId: decode.id,
+                userId: Number(req.userId),
                 publicKeys: pubkeys
             }
         })

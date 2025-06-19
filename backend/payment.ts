@@ -1,18 +1,16 @@
 import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { clusterApiUrl, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
-import express, { Router } from "express"
-import type { Request, Response, NextFunction } from "express"
-import jwt, { type JwtPayload } from "jsonwebtoken";
+import express, {type Router } from "express"
+import jwt from "jsonwebtoken";
 import { JWT_SECRTE } from "./secrete";
-import { authMiddleware } from './middleware';
 const prisma = new PrismaClient().$extends(withAccelerate())
 const payment: Router = express.Router();
-import type { AuthenticatedRequest } from './middleware';
 
 
 payment.use((req, res, next) => {
-    const header = req.headers["auth"];
+   
+   try{ const header = req.headers["auth"];
     if (!header || typeof header !== "string") {
         return res.status(401).json({ message: "Authentication required" });
     }
@@ -21,6 +19,11 @@ payment.use((req, res, next) => {
     (req as any).userId = Number(token.users.id)
     console.log(req.userId)
     next();
+}
+catch(e){
+    res.send("Server Down");
+    console.log(e);
+}
 })
 
 payment.get("/", async (req, res) => {
