@@ -28,6 +28,7 @@
     "jsonwebtoken": "^9.0.2",
     "prisma": "^6.10.0",
     "react-router-dom": "^7.6.2",
-    "test": "."
+    "test": ".",
+    "zod": "^3.25.67"
   }
 }

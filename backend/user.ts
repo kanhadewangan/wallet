@@ -5,16 +5,23 @@ import jwt, { type JwtPayload } from "jsonwebtoken";
 import { JWT_SECRTE } from "./secrete";
 import crypto from "crypto";
 import cookieParser from "cookie-parser";
+import  { z } from "zod";
 const route = express.Router();
 import { withAccelerate } from "@prisma/extension-accelerate";
 const prisma = new PrismaClient().$extends(withAccelerate())
 
 route.use(cookieParser());
 
+const schema = z.object({
+    username:z.string(),
+    email:z.string().email(),
+    password:z.string().min(6),
+
+})
  
 route.post("/signup", async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const { username, email, password } = schema.parse(req.body);
         const users = await prisma.user.create({
             data: {
                 username: username,
