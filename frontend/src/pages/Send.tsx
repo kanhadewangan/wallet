@@ -131,7 +131,7 @@ const Sends = () => {
                 {publicKey ? (
                   publicKey
                 ) : (
-                  <span className="text-gray-400">Loading address...</span>
+                  <span className="text-gray-400">No keys</span>
                 )}
               </p>
             </div>

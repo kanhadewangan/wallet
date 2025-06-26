@@ -158,7 +158,6 @@ payment.post("/p2p", async (req, res) => {
 
 payment.get("/keys", async (req, res) => {
     try {
-
         const keys = await prisma.keys.findMany({
             where: {
                 userId: Number(req.userId)
@@ -168,7 +167,7 @@ payment.get("/keys", async (req, res) => {
             }
         });
 
-        res.json(keys);
+        res.send(keys);
     } catch (error) {
         console.error("Error fetching keys:", error);
         res.status(500).json({

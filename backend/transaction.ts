@@ -4,7 +4,7 @@ import express from "express"
 import dotenv from "dotenv";
 import { JWT_SECRTE, SOLANA_VALIDATOR } from "./secrete";
 export const transaction = express.Router();
-import jwt from "jsonwebtoken"
+import jwt, { type JwtPayload } from "jsonwebtoken"
 import { withAccelerate } from "@prisma/extension-accelerate";
 const prisma = new PrismaClient().$extends(withAccelerate())
 
@@ -14,7 +14,7 @@ transaction.use((req,res,next)=>{
         return res.status(401).json({ message: "Authentication required" });
     }
     const token = jwt.verify(header,JWT_SECRTE);
-    (req as any).userId = token.users.id;
+    (req as any).userId = token.users.id as JwtPayload;
     next();
 })
 
@@ -23,9 +23,8 @@ transaction.get("/",(req,res)=>{
 })
 
 transaction.post("/airdrop", async (req, res) => {
-  
     const { pubkeys } = req.body;
-    const connection = new Connection("https://127.0.0.1:8899","confirmed");
+    const connection = new Connection(clusterApiUrl("devnet"));
     if (!connection) {
         res.send("Failed to connect devnets ");
     }

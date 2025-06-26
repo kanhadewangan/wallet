@@ -1,13 +1,12 @@
 import {  PrismaClient } from "@prisma/client";
 import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey ,Transaction,SystemProgram } from "@solana/web3.js";
 
-
+PublicKey.findProgramAddressSync
 const keypair = Keypair.generate();
 const secretKey = keypair.secretKey;
 const publicKey = keypair.publicKey.toBase58();
 const privateKey = keypair.secretKey.toString();
 const prisma = new PrismaClient();
-
 
 
 async function createKeypair() {
@@ -124,8 +123,14 @@ async function getAllKeypairs() {
         console.error("Error fetching all keypairs:", error);
     }
 }
-// await getAllKeypairs();
 
+function pda(user: { publicKey: PublicKey }, programId: PublicKey) {
+    let noteBump = PublicKey.findProgramAddressSync(
+        [Buffer.from("note"), user.publicKey.toBuffer()],
+        programId
+    );
+}
 
-
-
+console.log("Public Key:", publicKey);
+console.log("Private Key:", privateKey.toWellFormed());
+console.log("Secret Key:", pda(keypair, new PublicKey("4Wn27sq2UsUvE1L6soxyGxwCy6zjqsN6GRq7RriNFDBc"))); // Replace with your actual program ID
