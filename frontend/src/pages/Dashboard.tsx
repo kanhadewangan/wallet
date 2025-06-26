@@ -142,6 +142,12 @@ const newsItems: NewsItem[] = [
   }
 ];
 
+// Add this interface for keys
+interface KeyData {
+  publicKeys: string;
+  // Add other properties as needed
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -150,7 +156,7 @@ const Dashboard = () => {
   const [error, setError] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [keys, setKeys] = useState<Array<{ publicKeys: string }>>([]);
+  const [keys, setKeys] = useState<KeyData[]>([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -160,20 +166,26 @@ const Dashboard = () => {
 
   const checkAuth = async () => {
     const token = localStorage.getItem('token');
-    if (token) {
-      // TODO: Verify token with backend
-      setIsAuthenticated(true);
-      // Mock balance data - replace with actual API call
-      setBalance('10.5');
+    if (!token) {
+      setIsAuthenticated(false);
+      setLoading(false);
+      return;
     }
-    const response = await axios.get("http://localhost:3000/payments/keys", {
-      headers: {
-        auth: token
-      }
-    });
-
-    // const res = await axios.get
-    setKeys(response.data);
+    setIsAuthenticated(true);
+    setBalance('10.5');
+    try {
+      const response = await axios.get("http://localhost:3000/payments/keys", {
+        headers: {
+          auth: token
+        }
+      });
+      const keysData: KeyData[] = Array.isArray(response.data) ? response.data : [];
+      setKeys(keysData);
+      console.log(keysData);
+    } catch (err) {
+      setKeys([]);
+      setError('Failed to fetch keys');
+    }
     setLoading(false);
   };
 
@@ -300,7 +312,7 @@ const Dashboard = () => {
                 }
               }}>
                 <Typography variant="body2" sx={{ color: '#14F195' }}>
-                  {keys[0]?.publicKeys || 'No keys found'}
+                  {(keys && keys[0]?.publicKeys) || 'No keys found'}
                 </Typography>
                 <Tooltip title="Copy Public Key">
                   <IconButton
@@ -934,6 +946,10 @@ const Dashboard = () => {
                   </List>
                 </CardContent>
               </MotionCard>
+            </Grid>
+          </Grid>
+        </Container>
+
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
@@ -1042,7 +1058,7 @@ const Dashboard = () => {
                   gap: 2
                 }}>
                   <Typography variant="body1">
-                    No keys found
+                   {(keys && keys[0]?.publicKeys) || 'No keys found'} 
                   </Typography>
                   <Button
                     variant="contained"
@@ -1085,10 +1101,7 @@ const Dashboard = () => {
             </Button>
           </DialogActions>
         </Dialog>
-      </Grid>
-    </Grid>
-    </Container>
-    </Box>
+      </Box>
     </ThemeProvider>
   );
 };
